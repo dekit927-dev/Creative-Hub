@@ -287,19 +287,18 @@ async function loadOverviewData() {
           <td>
             <div style="display:flex; align-items:center; gap:8px;">
               ${avatar(u, 'small')}
-              <div>
-                <strong>${esc(u.full_name)}</strong>
-                <div class="muted" style="font-size:0.78rem;">@${esc(u.username)}</div>
+              <div style="min-width:0; overflow:hidden;">
+                <strong style="display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:0.88rem;">${esc(u.full_name)}</strong>
+                <div class="muted" style="font-size:0.75rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${esc(u.email || '@' + u.username)}</div>
               </div>
             </div>
           </td>
-          <td style="font-size:0.85rem;">${esc(u.email)}</td>
-          <td style="font-size:0.85rem;">${formatDate(u.created_at)}</td>
-          <td><span class="status-pill ${u.status}">${u.status}</span></td>
+          <td style="font-size:0.82rem; white-space:nowrap; color:var(--muted);">${formatDate(u.created_at)}</td>
+          <td style="text-align:right;"><span class="status-pill ${u.status}">${u.status}</span></td>
         </tr>
       `).join('');
     } else {
-      recentUsersBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No recent registrations found.</td></tr>`;
+      recentUsersBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No recent registrations found.</td></tr>`;
     }
 
     // Populate Recent Activity Table
@@ -307,16 +306,18 @@ async function loadOverviewData() {
     if (data.recent_activity && data.recent_activity.length > 0) {
       recentActBody.innerHTML = data.recent_activity.map(p => `
         <tr>
-          <td>
-            <a href="creation-details.html?id=${p.id}" style="color:inherit; font-weight:600;">${esc(p.title)}</a>
+          <td style="max-width:200px;">
+            <a href="creation-details.html?id=${p.id}" style="color:inherit; font-weight:600; display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:0.88rem;" title="${esc(p.title)}">${esc(p.title)}</a>
+            <div class="muted" style="font-size:0.75rem; margin-top:2px;">by ${esc(p.creator.name)}</div>
           </td>
-          <td>${esc(p.creator.name)}</td>
           <td><span class="tag">${esc(p.category)}</span></td>
-          <td>${p.likes} likes &middot; ${p.comments} comments</td>
+          <td style="text-align:right; font-size:0.82rem; white-space:nowrap;">
+            <strong>${p.likes}</strong> likes &middot; <strong>${p.comments}</strong> comm
+          </td>
         </tr>
       `).join('');
     } else {
-      recentActBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No recent content uploaded.</td></tr>`;
+      recentActBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No recent content uploaded.</td></tr>`;
     }
 
     // Load Charts concurrently

@@ -741,17 +741,16 @@ img {
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-x pan-y !important;
     overscroll-behavior-x: contain !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: var(--blue-border) transparent !important;
+    scrollbar-width: none !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
     padding: 10px 14px !important;
     gap: 8px !important;
-    position: sticky !important;
-    top: 54px !important;
-    z-index: 95 !important;
+    position: static !important;
+    top: auto !important;
+    z-index: 1 !important;
     background: var(--card) !important;
     align-items: center !important;
     cursor: grab;
@@ -761,15 +760,7 @@ img {
     user-select: none !important;
   }
   .admin-sidebar::-webkit-scrollbar {
-    height: 4px !important;
-    display: block !important;
-  }
-  .admin-sidebar::-webkit-scrollbar-track {
-    background: transparent !important;
-  }
-  .admin-sidebar::-webkit-scrollbar-thumb {
-    background: var(--blue-border) !important;
-    border-radius: 999px !important;
+    display: none !important;
   }
   .admin-sidebar-title {
     display: none !important;
@@ -3092,10 +3083,32 @@ label {
 
 .data-table {
   width: 100%;
-  min-width: 600px;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.92rem;
+}
+
+.data-table:not(.overview-table) {
+  min-width: 620px;
+}
+
+/* Overview table shown in full without horizontal scroll cutoffs */
+.overview-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: auto !important;
+}
+
+.overview-table th,
+.overview-table td {
+  padding: 10px 10px !important;
+  font-size: 0.86rem !important;
+  vertical-align: middle;
+}
+
+.overview-table-wrap {
+  width: 100% !important;
+  overflow-x: auto !important;
 }
 
 .data-table th {
@@ -3225,7 +3238,7 @@ label {
   gap: 20px;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1100px) {
   .admin-two-col-grid {
     grid-template-columns: 1fr !important;
     gap: 16px;

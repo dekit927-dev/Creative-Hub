@@ -239,19 +239,18 @@
               <h3 class="chart-title">Recent Student Registrations</h3>
               <a href="#users" onclick="switchTab('users')" class="btn small secondary">All Users →</a>
             </div>
-            <div class="table-wrap" style="box-shadow:none; border:none; margin:0;">
-              <table class="data-table">
+            <div class="table-wrap overview-table-wrap" style="box-shadow:none; border:none; margin:0; overflow-x:auto;">
+              <table class="data-table overview-table">
                 <thead>
                   <tr>
                     <th>Student</th>
-                    <th>Email</th>
                     <th>Joined</th>
-                    <th>Status</th>
+                    <th style="text-align:right;">Status</th>
                   </tr>
                 </thead>
                 <tbody id="overview-recent-users">
                   <tr>
-                    <td colspan="4" style="text-align:center;">Loading recent registrations...</td>
+                    <td colspan="3" style="text-align:center;">Loading recent registrations...</td>
                   </tr>
                 </tbody>
               </table>
@@ -263,19 +262,18 @@
               <h3 class="chart-title">Recent Creative Activity</h3>
               <a href="#creations" onclick="switchTab('creations')" class="btn small secondary">All Posts →</a>
             </div>
-            <div class="table-wrap" style="box-shadow:none; border:none; margin:0;">
-              <table class="data-table">
+            <div class="table-wrap overview-table-wrap" style="box-shadow:none; border:none; margin:0; overflow-x:auto;">
+              <table class="data-table overview-table">
                 <thead>
                   <tr>
                     <th>Creation</th>
-                    <th>Creator</th>
                     <th>Category</th>
-                    <th>Engagement</th>
+                    <th style="text-align:right;">Engagement</th>
                   </tr>
                 </thead>
                 <tbody id="overview-recent-activity">
                   <tr>
-                    <td colspan="4" style="text-align:center;">Loading recent posts...</td>
+                    <td colspan="3" style="text-align:center;">Loading recent posts...</td>
                   </tr>
                 </tbody>
               </table>
