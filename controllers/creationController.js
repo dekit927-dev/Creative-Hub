@@ -52,7 +52,7 @@ const CreationController = {
       }
 
       let imageData = null;
-      if (req.file && req.file.size <= 50 * 1024 * 1024) {
+      if (req.file && req.file.size <= 100 * 1024 * 1024) {
         try {
           const buf = fs.readFileSync(req.file.path);
           let mime = req.file.mimetype;

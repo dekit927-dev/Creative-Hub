@@ -1130,7 +1130,7 @@ function renderAdminThumbnail(image, category, title = "") {
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
     </div>`;
   }
-  return `<img src="${image}" style="width:48px; height:48px; object-fit:cover; border-radius:8px; flex-shrink:0; display:block;" alt="${esc(title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';">`;
+  return `<img src="${image}" style="width:48px; height:48px; object-fit:cover; border-radius:8px; flex-shrink:0; display:block;" alt="${esc(title)}">`;
 }
 
 // ================= 4. CONTENT ANALYTICS =================

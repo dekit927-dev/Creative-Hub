@@ -64,9 +64,18 @@ function handleFileSelected(file) {
     return;
   }
 
-  const selectedType = document.getElementById("media-type").value;
-  const cfg = mediaTypeConfig[selectedType] || mediaTypeConfig.image;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const isVideo = file.type.startsWith("video/") || ['mp4', 'webm', 'mov', 'mkv', 'ogv', 'avi', 'm4v'].includes(ext);
+  const isAudio = file.type.startsWith("audio/") || ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext);
 
+  let detectedType = "image";
+  if (isVideo) detectedType = "video";
+  else if (isAudio) detectedType = "audio";
+
+  const typeSelect = document.getElementById("media-type");
+  if (typeSelect) typeSelect.value = detectedType;
+
+  const cfg = mediaTypeConfig[detectedType] || mediaTypeConfig.image;
   const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
   if (previewSize) previewSize.textContent = `${sizeMB} MB / max ${cfg.maxSizeLabel}`;
 
@@ -82,16 +91,12 @@ function handleFileSelected(file) {
   if (previewBadge) previewBadge.textContent = `${cfg.typeTitle}: ${file.name}`;
   if (previewWrap) previewWrap.classList.remove("hidden");
 
-  const ext = file.name.split('.').pop().toLowerCase();
-  const isVideo = file.type.startsWith("video/") || ['mp4', 'webm', 'mov', 'mkv', 'ogv'].includes(ext);
-  const isAudio = file.type.startsWith("audio/") || ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext);
-
-  if (isVideo || selectedType === "video") {
+  if (detectedType === "video") {
     if (previewVideo) {
       previewVideo.src = currentObjectUrl;
       previewVideo.classList.remove("hidden");
     }
-  } else if (isAudio || selectedType === "audio") {
+  } else if (detectedType === "audio") {
     if (previewAudio) {
       previewAudio.src = currentObjectUrl;
       previewAudio.classList.remove("hidden");
@@ -110,20 +115,6 @@ function handleFileSelected(file) {
   const categorySelect = document.getElementById("category");
   if (categorySelect) {
     categorySelect.innerHTML = categories.map(c => `<option>${esc(c)}</option>`).join("");
-
-    categorySelect.addEventListener("change", () => {
-      const cat = categorySelect.value.toLowerCase();
-      const mediaTypeSelect = document.getElementById("media-type");
-      if (!mediaTypeSelect) return;
-      if (cat === "video") {
-        mediaTypeSelect.value = "video";
-      } else if (cat === "music") {
-        mediaTypeSelect.value = "audio";
-      } else if (["photography", "digital art", "graphic design", "illustration"].includes(cat)) {
-        mediaTypeSelect.value = "image";
-      }
-      updateMediaTypeUI();
-    });
   }
 
   const mediaTypeSelect = document.getElementById("media-type");

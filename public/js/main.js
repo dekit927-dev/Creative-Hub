@@ -493,16 +493,14 @@ async function loadNotifications() {
 }
 
 // ---------- post cards (used on Home, Profile and Search) ----------
-function getMediaType(filename, category = "") {
+function getMediaType(filename) {
   if (!filename) return "image";
   const clean = filename.split("?")[0].split("#")[0];
   const ext = clean.split(".").pop().toLowerCase();
-  const videoExts = ["mp4", "webm", "mov", "mkv", "ogv", "avi"];
+  const videoExts = ["mp4", "webm", "mov", "mkv", "ogv", "avi", "m4v"];
   const audioExts = ["mp3", "wav", "ogg", "m4a", "aac", "flac"];
   if (videoExts.includes(ext)) return "video";
   if (audioExts.includes(ext)) return "audio";
-  if (category && category.toLowerCase() === "video") return "video";
-  if (category && (category.toLowerCase() === "music" || category.toLowerCase() === "audio")) return "audio";
   return "image";
 }
 
@@ -535,7 +533,7 @@ function handleVideoError(videoEl, src, title) {
 }
 
 function renderPostMedia(post) {
-  const type = getMediaType(post.image, post.category);
+  const type = getMediaType(post.image);
   const src = fileUrl(post.image);
 
   if (type === "video") {
@@ -578,7 +576,7 @@ function renderPostMedia(post) {
 
   return `
     <a href="creation-details.html?id=${post.id}">
-      <img class="post-img" src="${src}" alt="${esc(post.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';">
+      <img class="post-img" src="${src}" alt="${esc(post.title)}" loading="lazy">
     </a>`;
 }
 

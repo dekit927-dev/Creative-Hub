@@ -118,8 +118,7 @@ function streamFileWithRange(req, res, filePath, mimeType) {
 
 // Self-healing & streaming /uploads route:
 // 1. Streams videos/audio with HTTP 206 Range requests for scrubbing, seeking, and cross-browser playback.
-// 2. If wiped from ephemeral container disk after restart, restores from PostgreSQL image_data / profile_picture_data.
-// 3. For pre-existing video creations whose original file was lost, recovers gracefully with sample_video.mp4 fallback.
+// 2. If wiped from ephemeral container disk after restart, restores the user's exact uploaded file from PostgreSQL image_data / profile_picture_data.
 app.get('/uploads/:filename', async (req, res, next) => {
   try {
     const filename = path.basename(req.params.filename);
@@ -182,25 +181,6 @@ app.get('/uploads/:filename', async (req, res, next) => {
         }
         res.type(contentType);
         return res.sendFile(filePath);
-      }
-    }
-
-    // Case 3: Video creation where file was wiped and image_data was NULL before this fix
-    if (!dataUri && (isVideo || (creationRow && creationRow.category && creationRow.category.toLowerCase() === 'video'))) {
-      const sampleVideoPath = path.join(__dirname, 'public/images/sample_video.mp4');
-      if (fs.existsSync(sampleVideoPath)) {
-        try {
-          fs.copyFileSync(sampleVideoPath, filePath);
-          // Persist sample video into DB for this creation so future restarts immediately have it
-          if (creationRow && creationRow.id) {
-            const sampleBuf = fs.readFileSync(sampleVideoPath);
-            const sampleDataUri = `data:video/mp4;base64,${sampleBuf.toString('base64')}`;
-            await db.none('UPDATE creations SET image_data = $1 WHERE id = $2 AND image_data IS NULL', [sampleDataUri, creationRow.id]);
-          }
-        } catch (e) {
-          console.warn('[SelfHealing] Error writing sample video fallback:', e.message);
-        }
-        return streamFileWithRange(req, res, filePath, 'video/mp4');
       }
     }
   } catch (err) {

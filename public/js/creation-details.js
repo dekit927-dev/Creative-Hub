@@ -13,7 +13,7 @@ async function loadCreation() {
   try {
     const c = await api("/api/creations/" + creationId);
     const isOwner = currentUser && (c.user.id === currentUser.id || currentUser.role === 'admin');
-    const mediaType = getMediaType(c.image, c.category);
+    const mediaType = getMediaType(c.image);
     let mediaHtml = '';
     if (mediaType === 'video') {
       const vSrc = fileUrl(c.image);
@@ -41,7 +41,7 @@ async function loadCreation() {
           <audio class="details-audio-player" src="${fileUrl(c.image)}" controls preload="auto" style="width:100%; margin-top:16px;"></audio>
         </div>`;
     } else {
-      mediaHtml = `<div><img class="details-img" src="${fileUrl(c.image)}" alt="${esc(c.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';"></div>`;
+      mediaHtml = `<div><img class="details-img" src="${fileUrl(c.image)}" alt="${esc(c.title)}"></div>`;
     }
 
     box.innerHTML = `
