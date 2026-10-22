@@ -11,10 +11,17 @@ require('dotenv').config();
 
 const isSsl = process.env.DB_SSL === 'true' || process.env.DB_SSL === '1';
 
+// Neon databases are named 'neondb' by default. If connecting to Neon and DB_NAME is missing or still set to the local default, use 'neondb'.
+const isNeon = Boolean(process.env.DB_HOST && process.env.DB_HOST.includes('neon.tech'));
+const requestedDbName = process.env.DB_NAME;
+const resolvedDbName = (isNeon && (!requestedDbName || requestedDbName === 'creative_hub_db'))
+  ? 'neondb'
+  : (requestedDbName || 'creative_hub_db');
+
 const connectionConfig = {
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432', 10),
-  database: process.env.DB_NAME || 'creative_hub_db',
+  database: resolvedDbName,
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASS || 'dekitshomo',
   ...(isSsl ? { ssl: { rejectUnauthorized: false } } : {})
