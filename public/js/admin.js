@@ -283,18 +283,21 @@ async function loadOverviewData() {
     const recentUsersBody = document.getElementById('overview-recent-users');
     if (data.recent_users && data.recent_users.length > 0) {
       recentUsersBody.innerHTML = data.recent_users.map(u => `
-        <tr>
-          <td>
-            <div style="display:flex; align-items:center; gap:8px;">
+        <tr class="overview-row">
+          <td class="col-main">
+            <div style="display:flex; align-items:center; gap:10px;">
               ${avatar(u, 'small')}
-              <div style="min-width:0; overflow:hidden;">
-                <strong style="display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:0.88rem;">${esc(u.full_name)}</strong>
-                <div class="muted" style="font-size:0.75rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${esc(u.email || '@' + u.username)}</div>
+              <div style="min-width:0;">
+                <strong style="display:block; font-size:0.9rem; color:var(--blue-navy); line-height:1.3;">${esc(u.full_name)}</strong>
+                <div class="muted" style="font-size:0.78rem; word-break:break-all;">${esc(u.email || '@' + u.username)}</div>
               </div>
             </div>
           </td>
-          <td style="font-size:0.82rem; white-space:nowrap; color:var(--muted);">${formatDate(u.created_at)}</td>
-          <td style="text-align:right;"><span class="status-pill ${u.status}">${u.status}</span></td>
+          <td class="col-date desktop-only" style="font-size:0.82rem; white-space:nowrap; color:var(--muted);">${formatDate(u.created_at)}</td>
+          <td class="col-status" style="text-align:right;">
+            <span class="status-pill ${u.status}">${u.status}</span>
+            <div class="mobile-only muted" style="font-size:0.74rem; margin-top:3px;">${formatDate(u.created_at)}</div>
+          </td>
         </tr>
       `).join('');
     } else {
@@ -305,14 +308,19 @@ async function loadOverviewData() {
     const recentActBody = document.getElementById('overview-recent-activity');
     if (data.recent_activity && data.recent_activity.length > 0) {
       recentActBody.innerHTML = data.recent_activity.map(p => `
-        <tr>
-          <td style="max-width:200px;">
-            <a href="creation-details.html?id=${p.id}" style="color:inherit; font-weight:600; display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:0.88rem;" title="${esc(p.title)}">${esc(p.title)}</a>
-            <div class="muted" style="font-size:0.75rem; margin-top:2px;">by ${esc(p.creator.name)}</div>
+        <tr class="overview-row">
+          <td class="col-main">
+            <a href="creation-details.html?id=${p.id}" class="overview-creation-title">${esc(p.title)}</a>
+            <div class="overview-meta-line">
+              <span class="muted" style="font-size:0.8rem;">by ${esc(p.creator.name)}</span>
+              <span class="tag mobile-only">${esc(p.category)}</span>
+            </div>
           </td>
-          <td><span class="tag">${esc(p.category)}</span></td>
-          <td style="text-align:right; font-size:0.82rem; white-space:nowrap;">
-            <strong>${p.likes}</strong> likes &middot; <strong>${p.comments}</strong> comm
+          <td class="col-category desktop-only"><span class="tag">${esc(p.category)}</span></td>
+          <td class="col-engagement" style="text-align:right;">
+            <span style="font-size:0.82rem; font-weight:600; color:var(--muted); white-space:nowrap;">
+              <strong>${p.likes}</strong> likes &middot; <strong>${p.comments}</strong> comments
+            </span>
           </td>
         </tr>
       `).join('');
