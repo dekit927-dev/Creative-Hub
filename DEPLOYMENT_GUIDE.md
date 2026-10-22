@@ -117,6 +117,15 @@ coverage
 | `DB_PASS` | `<your-neon-password>` | Neon database password |
 | `DB_SSL` | `true` | **Crucial** for Neon cloud connection |
 | `SESSION_SECRET` | `creativehub_super_secret_production_key_2026` | Random secret text |
+| `APP_URL` | `https://creative-hub-xxxx.onrender.com` | Your live Render URL |
+| `SMTP_SERVICE` | `gmail` *(optional)* | Email service provider |
+| `SMTP_USER` | `your-email@gmail.com` *(optional)* | Sender email address |
+| `SMTP_PASS` | `xxxx xxxx xxxx xxxx` *(optional)* | 16-character Google App Password |
+| `EMAIL_FROM` | `"CreativeHub Sherubtse" <your-email@gmail.com>` | Sender header |
+
+> **Email Delivery & Instant Verification:**
+> * **Live Inboxes**: To deliver actual emails to users' Gmail/college inboxes, add `SMTP_USER` and `SMTP_PASS` (Google Account > Security > 2-Step Verification > App Passwords). CreativeHub automatically detects Gmail and routes all verification and password reset emails.
+> * **Zero-Lockout Fallback**: If SMTP is not yet configured, CreativeHub ensures users are never stuck: students can click the green **"Instant Verify & Log In"** button on the login screen to activate their account and enter the community in 1 click!
 
 6. Click **Create Web Service**.
 7. Go to the **Logs** tab and watch the deployment:
@@ -124,9 +133,7 @@ coverage
    * The server starts with `CreativeHub running at http://localhost:3000`.
    * Status will switch to **Live**.
 8. Copy your live URL (e.g. `https://creative-hub-xxxx.onrender.com`).
-9. Go to the **Environment** tab on Render, add:
-   * `APP_URL` = `https://creative-hub-xxxx.onrender.com`
-   * Click **Save Changes** (Render will redeploy with the live URL).
+9. Go to the **Environment** tab on Render, ensure `APP_URL` matches your live URL, then click **Save Changes**.
 
 ---
 

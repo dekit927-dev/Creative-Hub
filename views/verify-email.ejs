@@ -109,7 +109,11 @@
           try {
             const res = await api("/api/resend-verification", { method: "POST", body: { email } });
             result.className = "message info";
-            result.textContent = res.message || "Verification email sent. Please check your inbox.";
+            let html = `<div>${res.message || "Verification email sent. Please check your inbox."}</div>`;
+            if (res.verificationToken) {
+              html += `<div style="margin-top:10px;"><a href="verify-email.html?token=${encodeURIComponent(res.verificationToken)}" class="btn small full" style="text-align:center; display:block; background:#10B981; border-color:#10B981; color:#fff; text-decoration:none;">&#10003; Click to Verify Account Now</a></div>`;
+            }
+            result.innerHTML = html;
             result.classList.remove("hidden");
           } catch (error) {
             result.className = "message error";

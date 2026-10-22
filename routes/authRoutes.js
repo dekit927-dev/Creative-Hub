@@ -11,6 +11,7 @@ router.get('/me', requireAuth, AuthController.getMe);
 // Email Verification & Password Recovery
 router.get('/verify-email', AuthController.verifyEmail);
 router.post('/verify-email', AuthController.verifyEmail);
+router.post('/instant-verify', AuthController.instantVerify);
 router.post('/resend-verification', AuthController.resendVerification);
 router.post('/forgot-password', AuthController.forgotPassword);
 router.post('/reset-password', AuthController.resetPassword);

@@ -7,20 +7,46 @@ let transporter = null;
 let lastSentEmail = null;
 
 function getAppUrl() {
-  return process.env.APP_URL || 'http://localhost:3000';
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(/\/+$/, '');
+  }
+  if (process.env.RENDER_EXTERNAL_URL) {
+    return process.env.RENDER_EXTERNAL_URL.replace(/\/+$/, '');
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://creative-hub-e2eh.onrender.com';
+  }
+  return 'http://localhost:3000';
 }
 
 function initTransporter() {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const rawUser = (process.env.SMTP_USER || '').trim();
+  // Strip all whitespace from password - common when copying Gmail App Passwords (e.g. "abcd efgh ijkl mnop")
+  const rawPass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
+  const service = process.env.SMTP_SERVICE || (rawUser.includes('@gmail.com') && !process.env.SMTP_HOST ? 'gmail' : null);
+
+  if (service && rawUser && rawPass) {
+    transporter = nodemailer.createTransport({
+      service,
+      auth: {
+        user: rawUser,
+        pass: rawPass
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000
+    });
+  } else if (process.env.SMTP_HOST && rawUser && rawPass) {
     const isSecure = process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465';
     transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      host: process.env.SMTP_HOST.trim(),
+      port: parseInt(process.env.SMTP_PORT || (isSecure ? '465' : '587'), 10),
       secure: isSecure,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
+        user: rawUser,
+        pass: rawPass
       },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
       tls: {
         rejectUnauthorized: false
       }
@@ -34,6 +60,17 @@ function initTransporter() {
 initTransporter();
 
 const EmailService = {
+  getAppUrl,
+  isConfigured() {
+    const rawUser = (process.env.SMTP_USER || '').trim();
+    const rawPass = (process.env.SMTP_PASS || '').trim();
+    const hasHostOrService = Boolean(
+      process.env.SMTP_SERVICE ||
+      process.env.SMTP_HOST ||
+      rawUser.includes('@gmail.com')
+    );
+    return Boolean(hasHostOrService && rawUser && rawPass);
+  },
   getTransporter() {
     return transporter || initTransporter();
   },

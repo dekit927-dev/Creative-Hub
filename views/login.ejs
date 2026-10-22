@@ -25,10 +25,22 @@
         <input type="password" id="password" placeholder="Your password" autocomplete="current-password" style="margin-top:6px;">
         <button class="btn full" type="submit" id="submit-btn">Log in</button>
       </form>
-      <div id="unverified-box" class="card hidden" style="margin-top:14px; padding:12px 14px; background:rgba(37, 99, 235, 0.08); border:1px solid rgba(37, 99, 235, 0.25); text-align:left;">
-        <strong style="color:var(--blue-navy); font-size:0.9rem; display:block; margin-bottom:4px;">Account not verified?</strong>
-        <p class="muted" style="font-size:0.83rem; margin:0 0 10px;">Check your email inbox or tap below to receive a fresh verification link:</p>
-        <button class="btn small full secondary" id="login-resend-btn" type="button">Resend Verification Email</button>
+      <div id="unverified-box" class="card hidden" style="margin-top:14px; padding:14px; background:rgba(37, 99, 235, 0.08); border:1px solid rgba(37, 99, 235, 0.25); border-radius:10px; text-align:left;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <strong style="color:var(--blue-navy); font-size:0.92rem;">Account Not Verified</strong>
+        </div>
+        <p id="unverified-desc" class="muted" style="font-size:0.83rem; margin:0 0 10px; line-height:1.45;">
+          Didn't receive your verification email? You can verify your account instantly and log in right away:
+        </p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn small full" id="login-instant-verify-btn" type="button" style="background:#10B981; border-color:#10B981; font-weight:700;">
+            &#10003; Instant Verify &amp; Log In
+          </button>
+          <a class="btn small full secondary hidden" id="login-direct-verify-link" href="#" style="text-align:center;">
+            Open Verification Link
+          </a>
+          <button class="btn small full secondary" id="login-resend-btn" type="button">Resend Verification Email</button>
+        </div>
       </div>
       <p class="muted" style="margin-top:16px">New here? <a href="register.html">Create an account</a></p>
       <p class="muted" style="font-size:0.85rem">Demo Student: <code>sonam@sherubtse.edu.bt</code> / <code>password123</code> &middot; Admin: <code>admin@sherubtse.edu.bt</code> / <code>password123</code></p>

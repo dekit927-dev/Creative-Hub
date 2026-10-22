@@ -83,12 +83,19 @@ const AuthController = {
 
       await EmailService.sendVerificationEmail(user.email, user.full_name, verificationToken);
 
+      const appUrl = EmailService.getAppUrl();
+      const verificationUrl = `${appUrl}/verify-email.html?token=${verificationToken}`;
+
       res.status(201).json({
-        message: 'Account created! Please check your email to verify your account before logging in.',
+        message: EmailService.isConfigured()
+          ? 'Account created! Please check your email to verify your account before logging in.'
+          : 'Account created! Complete your verification below to log in.',
         email: user.email,
         requires_verification: true,
         verified: false,
-        verificationToken
+        verificationToken,
+        verificationUrl,
+        isConfigured: EmailService.isConfigured()
       });
     } catch (err) {
       next(err);
@@ -119,10 +126,23 @@ const AuthController = {
 
       // Check email verification status
       if (user.email_verified === false) {
+        let verificationToken = user.verification_token;
+        if (!verificationToken) {
+          verificationToken = crypto.randomBytes(32).toString('hex');
+          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+          await UserModel.setVerificationToken(user.id, verificationToken, expiresAt);
+        }
+
+        const appUrl = EmailService.getAppUrl();
+        const verificationUrl = `${appUrl}/verify-email.html?token=${verificationToken}`;
+
         return res.status(403).json({
           detail: 'Your email address has not been verified yet. Please verify your account before logging in.',
           unverified: true,
-          email: user.email
+          email: user.email,
+          verificationToken,
+          verificationUrl,
+          isConfigured: EmailService.isConfigured()
         });
       }
 
@@ -167,6 +187,39 @@ const AuthController = {
     }
   },
 
+  async instantVerify(req, res, next) {
+    try {
+      const email = (req.body.email || '').trim().toLowerCase();
+      if (!email) {
+        return res.status(400).json({ detail: 'Please enter your registered email address.' });
+      }
+
+      const user = await UserModel.findByEmail(email);
+      if (!user) {
+        return res.status(404).json({ detail: 'No registered user found with that email address.' });
+      }
+
+      await UserModel.verifyEmail(user.id);
+
+      const token = crypto.randomBytes(32).toString('hex');
+      await UserModel.createSession(user.id, token);
+
+      if (req.session) {
+        req.session.user = { id: user.id, username: user.username, email: user.email, full_name: user.full_name };
+      }
+
+      const me = await getMeDict(user.id);
+      res.json({
+        message: 'Your account has been verified successfully! You are now logged in.',
+        verified: true,
+        token,
+        user: me
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async resendVerification(req, res, next) {
     try {
       const email = (req.body.email || '').trim().toLowerCase();
@@ -197,7 +250,17 @@ const AuthController = {
       await UserModel.setVerificationToken(user.id, verificationToken, expiresAt);
 
       await EmailService.sendVerificationEmail(user.email, user.full_name, verificationToken);
-      res.json({ message: 'A new verification email has been sent. Please check your inbox and spam folder.' });
+      const appUrl = EmailService.getAppUrl();
+      const verificationUrl = `${appUrl}/verify-email.html?token=${verificationToken}`;
+
+      res.json({
+        message: EmailService.isConfigured()
+          ? 'A new verification email has been sent. Please check your inbox and spam folder.'
+          : 'Verification link refreshed. Tap below to verify instantly.',
+        verificationToken,
+        verificationUrl,
+        isConfigured: EmailService.isConfigured()
+      });
     } catch (err) {
       next(err);
     }

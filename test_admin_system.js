@@ -117,6 +117,20 @@ async function runTests() {
     assert(newStudentLogin.status === 200 && newStudentLogin.data.token,
       'Newly verified student logs in successfully and receives session token');
 
+    // 2.1f Instant verification fallback activates unverified account and returns session token
+    const instantRegTimestamp = Date.now() + 1;
+    const instantStudentEmail = `instant_${instantRegTimestamp % 100000}@sherubtse.edu.bt`;
+    await request('POST', '/api/register', {}, {
+      full_name: 'Instant Creator',
+      username: `instant_${instantRegTimestamp % 100000}`,
+      email: instantStudentEmail,
+      password: 'password123',
+      confirm_password: 'password123'
+    });
+    const instantVerifyRes = await request('POST', '/api/instant-verify', {}, { email: instantStudentEmail });
+    assert(instantVerifyRes.status === 200 && instantVerifyRes.data.verified && instantVerifyRes.data.token,
+      'Instant verification activates unverified user and generates session token immediately');
+
     // 2.2 Student login (role = user)
     const studentLogin = await request('POST', '/api/login', {}, {
       email: 'sonam@sherubtse.edu.bt',
