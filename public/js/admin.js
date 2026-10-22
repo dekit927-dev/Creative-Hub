@@ -60,6 +60,56 @@ function setupNavigation() {
       window.location.hash = tab;
     });
   });
+
+  setupHorizontalScroll();
+}
+
+function setupHorizontalScroll() {
+  const containers = [
+    document.getElementById('admin-sidebar'),
+    document.getElementById('ranking-type-tabs'),
+    ...document.querySelectorAll('.table-wrap')
+  ].filter(Boolean);
+
+  containers.forEach(container => {
+    if (container._hasHScroll) return;
+    container._hasHScroll = true;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    container.addEventListener('mousedown', (e) => {
+      if (['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      isDown = true;
+      container.classList.add('is-dragging');
+      startX = e.pageX - container.offsetLeft;
+      scrollLeft = container.scrollLeft;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDown) {
+        isDown = false;
+        container.classList.remove('is-dragging');
+      }
+    });
+
+    container.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - container.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      container.scrollLeft = scrollLeft - walk;
+    });
+
+    // Translate vertical mouse wheel over horizontal scroll container into horizontal scrolling
+    container.addEventListener('wheel', (e) => {
+      if (container.scrollWidth > container.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        container.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    }, { passive: false });
+  });
 }
 
 function setupHashRouting() {
@@ -75,7 +125,11 @@ function setupHashRouting() {
 function switchTab(tabName) {
   // Update sidebar active link
   document.querySelectorAll('.admin-nav-item[data-tab]').forEach(el => {
-    el.classList.toggle('active', el.dataset.tab === tabName);
+    const isActive = el.dataset.tab === tabName;
+    el.classList.toggle('active', isActive);
+    if (isActive && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   });
 
   // Toggle visible section
@@ -87,6 +141,9 @@ function switchTab(tabName) {
   if (activeSection) {
     activeSection.classList.remove('hidden');
   }
+
+  // Bind any tables in newly active section for horizontal drag/wheel
+  setTimeout(setupHorizontalScroll, 100);
 
   // Load relevant section data
   loadTabData(tabName);
