@@ -44,8 +44,8 @@ async function seedDatabase(force = false) {
 
   // 2. Seed Administrator Account
   const adminUser = await db.one(
-    `INSERT INTO users (full_name, username, email, password, bio, role, status)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO users (full_name, username, email, password, bio, role, status, email_verified)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING *`,
     [
       'Sherubtse Administrator',
@@ -54,7 +54,8 @@ async function seedDatabase(force = false) {
       hashedPassword,
       'Official System Administrator for Sherubtse CreativeHub community platform.',
       'admin',
-      'active'
+      'active',
+      true
     ]
   );
 
@@ -95,8 +96,8 @@ async function seedDatabase(force = false) {
   const createdUsers = [];
   for (const person of people) {
     const u = await db.one(
-      'INSERT INTO users (full_name, username, email, password, bio, role, status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [person.name, person.username, person.email, hashedPassword, person.bio, 'user', 'active']
+      'INSERT INTO users (full_name, username, email, password, bio, role, status, email_verified) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [person.name, person.username, person.email, hashedPassword, person.bio, 'user', 'active', true]
     );
     createdUsers.push(u);
   }

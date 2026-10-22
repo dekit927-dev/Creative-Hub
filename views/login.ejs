@@ -18,10 +18,18 @@
       <form id="login-form">
         <label for="email">Email</label>
         <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label for="password" style="margin-bottom:0;">Password</label>
+          <a href="forgot-password.html" style="font-size:0.83rem; color:var(--blue-primary); font-weight:600;">Forgot password?</a>
+        </div>
+        <input type="password" id="password" placeholder="Your password" autocomplete="current-password" style="margin-top:6px;">
         <button class="btn full" type="submit" id="submit-btn">Log in</button>
       </form>
+      <div id="unverified-box" class="card hidden" style="margin-top:14px; padding:12px 14px; background:rgba(37, 99, 235, 0.08); border:1px solid rgba(37, 99, 235, 0.25); text-align:left;">
+        <strong style="color:var(--blue-navy); font-size:0.9rem; display:block; margin-bottom:4px;">Account not verified?</strong>
+        <p class="muted" style="font-size:0.83rem; margin:0 0 10px;">Check your email inbox or tap below to receive a fresh verification link:</p>
+        <button class="btn small full secondary" id="login-resend-btn" type="button">Resend Verification Email</button>
+      </div>
       <p class="muted" style="margin-top:16px">New here? <a href="register.html">Create an account</a></p>
       <p class="muted" style="font-size:0.85rem">Demo Student: <code>sonam@sherubtse.edu.bt</code> / <code>password123</code> &middot; Admin: <code>admin@sherubtse.edu.bt</code> / <code>password123</code></p>
     </div>

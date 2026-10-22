@@ -82,17 +82,40 @@ async function runTests() {
     const unauthRes = await request('GET', '/api/admin/dashboard/overview');
     assert(unauthRes.status === 401, 'Unauthenticated access to /api/admin/dashboard/overview returns 401 Unauthorized');
 
-    // 2.1b Student registration returns token and user
+    // 2.1b Student registration requires email verification
     const regTimestamp = Date.now();
+    const newStudentEmail = `pwangmo_${regTimestamp % 100000}@sherubtse.edu.bt`;
     const studentRegister = await request('POST', '/api/register', {}, {
       full_name: 'Pema Wangmo',
       username: `pwangmo_${regTimestamp % 100000}`,
-      email: `pwangmo_${regTimestamp % 100000}@sherubtse.edu.bt`,
+      email: newStudentEmail,
       password: 'password123',
       confirm_password: 'password123'
     });
-    assert(studentRegister.status === 200 && studentRegister.data.token && studentRegister.data.user,
-      'Student registration succeeds and immediately returns session token for seamless login');
+    assert(studentRegister.status === 201 && studentRegister.data.requires_verification,
+      'Student registration succeeds and generates email verification token');
+
+    // 2.1c Unverified student is blocked from logging in
+    const unverifiedLogin = await request('POST', '/api/login', {}, {
+      email: newStudentEmail,
+      password: 'password123'
+    });
+    assert(unverifiedLogin.status === 403 && unverifiedLogin.data.unverified,
+      'Unverified student is blocked from logging in with 403 Forbidden');
+
+    // 2.1d Verify email using the token stored in database
+    const userInDb = await db.oneOrNone('SELECT verification_token FROM users WHERE email = $1', [newStudentEmail]);
+    assert(userInDb && userInDb.verification_token, 'Verification token successfully generated in DB');
+    const verifyRes = await request('GET', `/api/verify-email?token=${userInDb.verification_token}`);
+    assert(verifyRes.status === 200 && verifyRes.data.verified, 'Email verification endpoint marks account verified');
+
+    // 2.1e Verified student can now log in
+    const newStudentLogin = await request('POST', '/api/login', {}, {
+      email: newStudentEmail,
+      password: 'password123'
+    });
+    assert(newStudentLogin.status === 200 && newStudentLogin.data.token,
+      'Newly verified student logs in successfully and receives session token');
 
     // 2.2 Student login (role = user)
     const studentLogin = await request('POST', '/api/login', {}, {
@@ -380,6 +403,192 @@ async function runTests() {
     // Verify post is gone from DB
     const checkDeleted = await db.oneOrNone('SELECT id FROM creations WHERE id = $1', [testPost.id]);
     assert(checkDeleted === null, 'Deleted post is permanently removed from the database');
+
+    // 13. Password Reset & Recovery Tests
+    console.log('\n--- TEST GROUP 12: PASSWORD RECOVERY & RESET FLOW ---');
+    // Request password reset for verified student
+    const forgotRes = await request('POST', '/api/forgot-password', {}, {
+      email: newStudentEmail
+    });
+    assert(forgotRes.status === 200 && forgotRes.data.message, 'Forgot password request succeeds with anti-enumeration response');
+
+    // Check reset token was stored in PostgreSQL database
+    const resetUserDb = await db.oneOrNone('SELECT reset_password_token FROM users WHERE email = $1', [newStudentEmail]);
+    assert(resetUserDb && resetUserDb.reset_password_token, 'Secure reset password token generated and stored in DB');
+
+    // Execute password reset with matching new passwords
+    const resetRes = await request('POST', '/api/reset-password', {}, {
+      token: resetUserDb.reset_password_token,
+      password: 'brandnewpassword123',
+      confirm_password: 'brandnewpassword123'
+    });
+    assert(resetRes.status === 200 && resetRes.data.message, 'Password reset endpoint successfully updates user password');
+
+    // Attempt login with old password (must fail)
+    const oldLoginAttempt = await request('POST', '/api/login', {}, {
+      email: newStudentEmail,
+      password: 'password123'
+    });
+    assert(oldLoginAttempt.status === 401, 'Old password is no longer accepted after password reset (401)');
+
+    // Attempt login with new password (must succeed)
+    const newPassLogin = await request('POST', '/api/login', {}, {
+      email: newStudentEmail,
+      password: 'brandnewpassword123'
+    });
+    assert(newPassLogin.status === 200 && newPassLogin.data.token, 'Student can log in successfully with new password');
+    const newStudentToken = newPassLogin.data.token;
+
+    // 14. Rich Challenge Details & Application Lifecycle
+    console.log('\n--- TEST GROUP 13: CHALLENGE DETAILS & APPLICATION WORKFLOW ---');
+    const futureDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const challengeCreateRes = await request('POST', '/api/challenges', adminHeaders, {
+      title: 'Himalayan Wildlife Photography & Design Contest',
+      category: 'Photography',
+      deadline: futureDate,
+      organizer: 'Kanglung Media Society',
+      short_summary: 'Capture the biodiversity and cultural heritage of eastern Bhutan.',
+      description: 'An open campus contest for photographers and illustrators to capture Kanglung wildlife and culture.',
+      eligibility: 'Open to all Sherubtse students',
+      participation_type: 'Individual',
+      team_size: '1 member',
+      location: 'Sherubtse Campus & Kanglung',
+      mode: 'On-campus',
+      deliverables: 'Up to 3 high-resolution photographs and a 150-word artist statement.',
+      evaluation_criteria: 'Creativity, composition, technical execution, and story impact.',
+      prizes: 'First Prize: Nu. 5,000 + Certificate; Runner Up: Nu. 2,500',
+      resources: 'Camera gear rental available via Media Cell in Block B.',
+      contact_info: 'media.club@sherubtse.edu.bt',
+      status: 'Active'
+    });
+    assert(challengeCreateRes.status === 201 && challengeCreateRes.data.id, 'Admin/organizer can create challenge with comprehensive rich fields');
+    const createdChallengeId = challengeCreateRes.data.id;
+
+    // Fetch challenge details by ID
+    const challengeDetailsRes = await request('GET', `/api/challenges/${createdChallengeId}`, {
+      'Authorization': `Bearer ${newStudentToken}`
+    });
+    assert(challengeDetailsRes.status === 200 &&
+           challengeDetailsRes.data.organizer === 'Kanglung Media Society' &&
+           challengeDetailsRes.data.deliverables &&
+           challengeDetailsRes.data.evaluation_criteria &&
+           challengeDetailsRes.data.prizes,
+      'Challenge details endpoint returns all rich fields, rubric, and organizer details');
+
+    // Student applies for challenge with cover note
+    const applyChallengeRes = await request('POST', `/api/challenges/${createdChallengeId}/apply`, {
+      'Authorization': `Bearer ${newStudentToken}`
+    }, {
+      message: 'I would like to submit my photography series on native birds around Kanglung campus.'
+    });
+    assert(applyChallengeRes.status === 200 && applyChallengeRes.data.challenge.my_application.status === 'Pending',
+      'Student can submit challenge application with custom note (Status: Pending)');
+
+    // Duplicate application is blocked
+    const dupChallengeApply = await request('POST', `/api/challenges/${createdChallengeId}/apply`, {
+      'Authorization': `Bearer ${newStudentToken}`
+    }, {
+      message: 'Submitting again'
+    });
+    assert(dupChallengeApply.status === 400, 'Duplicate active application is blocked with 400 Bad Request');
+
+    // Fetch participant list with reviewer permissions
+    const challengeReviewRes = await request('GET', `/api/challenges/${createdChallengeId}`, adminHeaders);
+    assert(challengeReviewRes.status === 200 && challengeReviewRes.data.participants_list.length > 0,
+      'Organizer/Admin can view applicant submissions list with cover messages');
+    const participantAppId = challengeReviewRes.data.participants_list[0].application_id;
+
+    // Admin updates application status to "Accepted" with feedback
+    const updateAppStatusRes = await request('PATCH', `/api/challenges/${createdChallengeId}/applications/${participantAppId}/status`, adminHeaders, {
+      status: 'Accepted',
+      decision_message: 'Excellent proposal, your photography portfolio has been accepted for exhibition!'
+    });
+    assert(updateAppStatusRes.status === 200 && updateAppStatusRes.data.application.status === 'Accepted',
+      'Organizer/Admin can review and update application status to Accepted with feedback');
+
+    // 15. Rich Collaboration Details & Join Request Lifecycle
+    console.log('\n--- TEST GROUP 14: COLLABORATION DETAILS & APPLICATION WORKFLOW ---');
+    const collabCreateRes = await request('POST', '/api/collaborations', {
+      'Authorization': `Bearer ${studentToken}` // Sonam creates collaboration
+    }, {
+      title: 'Interactive Sherubtse Campus Web Map',
+      category: 'Digital Art',
+      description: 'Building an illustrated interactive 3D map of the Sherubtse campus for incoming freshers.',
+      skills: 'UI/UX Design, Illustration, JavaScript',
+      roles: 'Frontend Developer & Vector Illustrator',
+      positions: '2 collaborators',
+      duration: '4 weeks',
+      mode: 'Hybrid',
+      location: 'Kanglung Campus',
+      deliverables: 'Interactive web prototype, responsive SVG map assets, and student directory integration.',
+      tools: 'Figma, HTML5 Canvas, React/Vanilla JS',
+      compensation: 'Portfolio showcase piece & Joint Authorship in College Magazine',
+      application_instructions: 'Share your GitHub or portfolio and specify which role you want to take.'
+    });
+    assert(collabCreateRes.status === 201 && collabCreateRes.data.id, 'Creator can post collaboration project with full rich specifications');
+    const createdCollabId = collabCreateRes.data.id;
+
+    // Fetch collaboration details by ID
+    const collabDetailsRes = await request('GET', `/api/collaborations/${createdCollabId}`, {
+      'Authorization': `Bearer ${newStudentToken}`
+    });
+    assert(collabDetailsRes.status === 200 &&
+           collabDetailsRes.data.roles &&
+           collabDetailsRes.data.tools &&
+           collabDetailsRes.data.compensation,
+      'Collaboration details endpoint returns all rich role, tool, and compensation specifications');
+
+    // New student requests to join
+    const applyCollabRes = await request('POST', `/api/collaborations/${createdCollabId}/apply`, {
+      'Authorization': `Bearer ${newStudentToken}`
+    }, {
+      message: 'I am a 2nd year CS student skilled in vector SVG illustration and web design.'
+    });
+    assert(applyCollabRes.status === 200 && applyCollabRes.data.collaboration.my_request.status === 'Pending',
+      'Student can submit join request for collaboration project (Status: Pending)');
+
+    // Project lead reviews requester list
+    const leadCollabReviewRes = await request('GET', `/api/collaborations/${createdCollabId}`, {
+      'Authorization': `Bearer ${studentToken}` // Sonam (project lead)
+    });
+    assert(leadCollabReviewRes.status === 200 && leadCollabReviewRes.data.requesters_list.length > 0,
+      'Project lead can view applicants with requested roles and cover messages');
+    const collabRequestId = leadCollabReviewRes.data.requesters_list[0].request_id;
+
+    // Project lead transitions status to "Under Review"
+    const updateCollabReqRes = await request('PATCH', `/api/collaborations/${createdCollabId}/requests/${collabRequestId}/status`, {
+      'Authorization': `Bearer ${studentToken}`
+    }, {
+      status: 'Under Review',
+      decision_message: 'Your illustration portfolio looks great, let us schedule a sync this Thursday.'
+    });
+    assert(updateCollabReqRes.status === 200 && updateCollabReqRes.data.request.status === 'Under Review',
+      'Project lead can transition applicant status to Under Review with collaborative feedback note');
+
+    // 16. Unified Applicant Dashboard ("My Applications")
+    console.log('\n--- TEST GROUP 15: MY APPLICATIONS DASHBOARD & STATUS TRACKING ---');
+    const myAppsRes = await request('GET', '/api/my-applications', {
+      'Authorization': `Bearer ${newStudentToken}`
+    });
+    assert(myAppsRes.status === 200 &&
+           Array.isArray(myAppsRes.data.challenges) &&
+           Array.isArray(myAppsRes.data.collaborations),
+      'Unified /api/my-applications returns both challenge submissions and collaboration requests');
+
+    const myChallengeApp = myAppsRes.data.challenges.find(c => c.opportunity_id === createdChallengeId);
+    assert(myChallengeApp && myChallengeApp.status === 'Accepted' && myChallengeApp.decision_message,
+      'Applicant dashboard reflects Accepted status with reviewer decision message for challenge');
+
+    const myCollabApp = myAppsRes.data.collaborations.find(c => c.opportunity_id === createdCollabId);
+    assert(myCollabApp && myCollabApp.status === 'Under Review' && myCollabApp.decision_message,
+      'Applicant dashboard reflects Under Review status with lead decision message for collaboration');
+
+    // Applicant can withdraw under-review collaboration application
+    const withdrawCollabRes = await request('POST', `/api/collaborations/${createdCollabId}/withdraw`, {
+      'Authorization': `Bearer ${newStudentToken}`
+    });
+    assert(withdrawCollabRes.status === 200 && withdrawCollabRes.data.collaboration.my_request.status === 'Withdrawn',
+      'Applicant can withdraw pending or under-review application gracefully');
 
   } catch (err) {
     console.error('Test execution error:', err);

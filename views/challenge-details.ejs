@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Challenge Details - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .details-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .detail-section {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .detail-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .detail-section h3 {
+      font-size: 1.15rem;
+      color: var(--heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin: 14px 0 20px;
+    }
+    .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      background: var(--blue-pale);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+    }
+    .meta-item strong {
+      color: var(--ink);
+    }
+    .status-badge-lg {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .status-badge-lg.pending { background: #FEF3C7; color: #B45309; }
+    .status-badge-lg.under-review { background: #DBEAFE; color: #1D4ED8; }
+    .status-badge-lg.accepted { background: #D1FAE5; color: #047857; }
+    .status-badge-lg.rejected { background: #FEE2E2; color: #B91C1C; }
+    .status-badge-lg.withdrawn { background: #F1F5F9; color: #64748B; }
+    .feedback-callout {
+      background: rgba(37, 99, 235, 0.05);
+      border-left: 4px solid var(--blue-primary);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-top: 12px;
+      font-size: 0.92rem;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-card {
+      background: var(--card);
+      max-width: 520px;
+      width: 100%;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-hover);
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container" style="max-width:1100px;">
+    <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+      <a href="challenges.html" class="muted" style="display:inline-flex; align-items:center; gap:6px; font-weight:600;">
+        &larr; Back to Challenges
+      </a>
+      <a href="applications.html" class="btn small secondary" style="font-weight:600;">
+        My Applications
+      </a>
+    </div>
+
+    <div id="loading" class="card" style="text-align:center; padding:40px;">
+      <p class="muted">Loading challenge details...</p>
+    </div>
+
+    <div id="content" class="hidden">
+      <!-- Challenge Header Card -->
+      <div class="card" style="margin-bottom:24px; position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+              <span class="tag" id="c-category">Category</span>
+              <span class="tag warn hidden" id="c-ended-badge">Ended</span>
+              <span class="tag" id="c-mode">Mode</span>
+            </div>
+            <h1 id="c-title" style="margin:0 0 8px; font-size:1.85rem; color:var(--heading);">Challenge Title</h1>
+            <p class="muted" style="margin:0; font-size:0.95rem;">
+              Organized by <strong id="c-organizer" style="color:var(--ink);">Organizer</strong>
+            </p>
+          </div>
+          <div id="c-top-status"></div>
+        </div>
+
+        <div class="meta-row">
+          <div class="meta-item"><span>&#128197;</span> <span>Deadline: <strong id="c-deadline">--</strong></span></div>
+          <div class="meta-item"><span>&#128205;</span> <span>Location: <strong id="c-location">--</strong></span></div>
+          <div class="meta-item"><span>&#128101;</span> <span>Team: <strong id="c-team-size">--</strong></span></div>
+          <div class="meta-item"><span>&#128100;</span> <span>Participants: <strong id="c-participants-count">0</strong></span></div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="details-grid">
+        <!-- Left: Full Details Sections -->
+        <div class="card">
+          <div class="detail-section">
+            <h3>Overview & Objectives</h3>
+            <p id="c-description" style="line-height:1.7; color:var(--ink); white-space:pre-line;"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Deliverables & Submission Guidelines</h3>
+            <p id="c-deliverables" style="line-height:1.6; color:var(--muted);"></p>
+            <div class="card" style="background:var(--blue-pale); border:1px solid var(--blue-border); padding:12px 16px; margin-top:8px;">
+              <strong style="color:var(--blue-navy); font-size:0.85rem; display:block; margin-bottom:4px;">How to Submit:</strong>
+              <p id="c-submission-instructions" style="margin:0; font-size:0.88rem; color:var(--ink);"></p>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Eligibility & Criteria</h3>
+            <p id="c-eligibility" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Evaluation Criteria & Judging Rubric</h3>
+            <p id="c-evaluation-criteria" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Prizes, Awards & Perks</h3>
+            <p id="c-prizes" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Campus Resources & Support</h3>
+            <p id="c-resources" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Contact Person</h3>
+            <p id="c-contact-info" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+        </div>
+
+        <!-- Right: Status, Action Card & Participants -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <!-- Action & Status Card -->
+          <div class="card" id="action-card" style="border:2px solid var(--blue-border);">
+            <h3 style="margin-top:0; color:var(--heading); font-size:1.1rem;">Application Status</h3>
+            <div id="application-status-box" style="margin:12px 0;">
+              <!-- Dynamic status render -->
+            </div>
+            <div id="action-buttons-box">
+              <!-- Buttons dynamically inserted -->
+            </div>
+          </div>
+
+          <!-- Organizer / Admin Review Box (if applicable) -->
+          <div class="card hidden" id="reviewer-box">
+            <h3 style="margin-top:0; color:var(--heading); font-size:1.1rem;">Applicant Submissions</h3>
+            <p class="muted" style="font-size:0.85rem; margin-bottom:12px;">Review student submissions and assign status.</p>
+            <div id="applicants-list" class="stack" style="gap:12px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Modal -->
+    <div id="apply-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h3 style="margin-top:0; color:var(--heading);">Submit Challenge Application</h3>
+        <p class="muted" style="font-size:0.88rem; margin-bottom:16px;">
+          Provide details about your proposed entry, team members (if applicable), or portfolio link.
+        </p>
+        <div id="modal-error" class="message error hidden"></div>
+        <form id="apply-form">
+          <label for="apply-message">Cover Note & Submission Links</label>
+          <textarea id="apply-message" rows="5" placeholder="Share your project concept, links to GitHub/Google Drive/Behance, or a note to the organizers..." style="margin-bottom:16px;"></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn secondary" id="close-modal-btn">Cancel</button>
+            <button type="submit" class="btn" id="confirm-apply-btn">Submit Application</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/challenge-details.js"></script>
+</body>
+</html>

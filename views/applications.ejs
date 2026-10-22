@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Applications - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .metrics-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-tile {
+      background: var(--card);
+      border: 1px solid var(--blue-border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .metric-tile strong {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--heading);
+      display: block;
+      margin-top: 4px;
+    }
+    .status-badge-lg {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .status-badge-lg.pending { background: #FEF3C7; color: #B45309; }
+    .status-badge-lg.under-review { background: #DBEAFE; color: #1D4ED8; }
+    .status-badge-lg.accepted { background: #D1FAE5; color: #047857; }
+    .status-badge-lg.rejected { background: #FEE2E2; color: #B91C1C; }
+    .status-badge-lg.withdrawn { background: #F1F5F9; color: #64748B; }
+    .app-card {
+      background: var(--card);
+      border: 1px solid var(--blue-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .app-card:hover {
+      box-shadow: var(--shadow-hover);
+      border-color: var(--blue-primary);
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-pill {
+      background: var(--card);
+      border: 1px solid var(--blue-border);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .filter-pill.active {
+      background: var(--blue-primary);
+      color: #FFFFFF;
+      border-color: var(--blue-primary);
+    }
+    .feedback-box {
+      background: rgba(37, 99, 235, 0.05);
+      border-left: 3px solid var(--blue-primary);
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin-top: 12px;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container">
+    <div class="page-title">
+      <div>
+        <h1 style="margin-bottom:4px;">My Applications & Status</h1>
+        <p class="muted" style="margin:0; font-size:0.95rem;">Track the status of all your challenge submissions and collaboration join requests.</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="challenges.html" class="btn small secondary">Explore Challenges</a>
+        <a href="collaboration.html" class="btn small secondary">Explore Collaborations</a>
+      </div>
+    </div>
+
+    <!-- Metrics Summary -->
+    <div class="metrics-summary-grid">
+      <div class="metric-tile">
+        <span class="muted" style="font-size:0.85rem; font-weight:600;">Total Applications</span>
+        <strong id="stat-total">0</strong>
+      </div>
+      <div class="metric-tile">
+        <span class="muted" style="font-size:0.85rem; font-weight:600;">Pending Review</span>
+        <strong id="stat-pending" style="color:#B45309;">0</strong>
+      </div>
+      <div class="metric-tile">
+        <span class="muted" style="font-size:0.85rem; font-weight:600;">Under Review</span>
+        <strong id="stat-under-review" style="color:#1D4ED8;">0</strong>
+      </div>
+      <div class="metric-tile">
+        <span class="muted" style="font-size:0.85rem; font-weight:600;">Accepted</span>
+        <strong id="stat-accepted" style="color:#047857;">0</strong>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-tabs">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="filter-pill active" data-type="all" onclick="filterType('all', this)">All (0)</button>
+        <button class="filter-pill" data-type="Challenge" onclick="filterType('Challenge', this)">Challenges (0)</button>
+        <button class="filter-pill" data-type="Collaboration" onclick="filterType('Collaboration', this)">Collaborations (0)</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label for="status-filter" style="font-size:0.85rem; margin:0; color:var(--muted); font-weight:600;">Status:</label>
+        <select id="status-filter" style="width:auto; padding:6px 12px; font-size:0.85rem;" onchange="filterStatus(this.value)">
+          <option value="all">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Under Review">Under Review</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Withdrawn">Withdrawn</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="message" class="message error hidden"></div>
+    <div id="loading" class="card" style="text-align:center; padding:30px;"><p class="muted">Loading applications...</p></div>
+    <div id="applications-list" class="stack" style="gap:16px;"></div>
+  </main>
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/applications.js"></script>
+</body>
+</html>

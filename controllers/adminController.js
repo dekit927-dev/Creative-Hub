@@ -256,9 +256,9 @@ const AdminController = {
 
       const newUser = await db.tx(async t => {
         const created = await t.one(
-          `INSERT INTO users (full_name, username, email, password, role, status, bio)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)
-           RETURNING id, full_name, username, email, role, status, bio, created_at`,
+          `INSERT INTO users (full_name, username, email, password, role, status, bio, email_verified)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)
+           RETURNING id, full_name, username, email, role, status, bio, created_at, email_verified`,
           [full_name.trim(), username.trim(), email.trim().toLowerCase(), hashedPassword, role, status, bio ? bio.trim() : '']
         );
 

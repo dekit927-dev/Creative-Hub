@@ -137,12 +137,16 @@ async function api(path, options = {}, retries = 2) {
     localStorage.removeItem("token");
     window.location.href = "login.html";
     throw new Error("Please log in.");
-  }
   if (!response.ok) {
     if (response.status === 502 || response.status === 503 || response.status === 504) {
       throw new Error("The platform server is waking up on Render. Please wait a few seconds and try again.");
     }
-    throw new Error(data && data.detail ? data.detail : "Something went wrong. Please try again.");
+    const errMsg = data && (data.error || data.message || data.detail) ? (data.error || data.message || data.detail) : "Something went wrong. Please try again.";
+    const err = new Error(errMsg);
+    if (data && typeof data === "object") {
+      Object.assign(err, data);
+    }
+    throw err;
   }
   return data;
 }

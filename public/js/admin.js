@@ -178,6 +178,12 @@ function loadTabData(tabName) {
     case 'categories':
       loadCategoriesList();
       break;
+    case 'challenges':
+      loadAdminChallenges();
+      break;
+    case 'collaborations':
+      loadAdminCollaborations();
+      break;
   }
 }
 
@@ -1628,6 +1634,104 @@ async function deleteCategoryPrompt(id, name) {
     loadCategoriesList();
   } catch (err) {
     toast(err.message || 'Error deleting category.');
+  }
+}
+
+// ================= CHALLENGES & COLLABORATIONS ADMIN =================
+async function loadAdminChallenges() {
+  const tbody = document.getElementById('admin-challenges-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading challenges...</td></tr>';
+  try {
+    const list = await api('/api/challenges');
+    if (!list || list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;" class="muted">No challenges found. Create the first one!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(ch => `
+      <tr>
+        <td>#${ch.id}</td>
+        <td><strong>${esc(ch.title)}</strong></td>
+        <td><span class="tag">${esc(ch.category)}</span></td>
+        <td>${esc(ch.organizer || "Sherubtse Creative Club")}</td>
+        <td>${formatDate(ch.deadline)}</td>
+        <td>${esc(ch.mode || "Hybrid")}</td>
+        <td><strong>${ch.participants}</strong> enrolled</td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <a href="/challenge-details.html?id=${ch.id}" class="btn small" target="_blank">Review & Details</a>
+            <button class="btn small secondary" onclick="deleteAdminChallenge(${ch.id}, '${esc(ch.title)}')" style="color:var(--danger)">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="8" style="color:var(--danger); text-align:center;">${esc(err.message)}</td></tr>`;
+  }
+}
+
+async function deleteAdminChallenge(id, title) {
+  if (!confirm(`Are you sure you want to delete challenge "${title}"? This will also remove all participant applications.`)) return;
+  try {
+    await api(`/api/challenges/${id}`, { method: 'DELETE' });
+    toast('Challenge deleted successfully.');
+    loadAdminChallenges();
+  } catch (err) {
+    toast(err.message || 'Failed to delete challenge.');
+  }
+}
+
+async function loadAdminCollaborations() {
+  const tbody = document.getElementById('admin-collaborations-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading collaborations...</td></tr>';
+  try {
+    const list = await api('/api/collaborations');
+    if (!list || list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;" class="muted">No collaboration projects found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(c => `
+      <tr>
+        <td>#${c.id}</td>
+        <td><strong>${esc(c.title)}</strong></td>
+        <td>${esc(c.user.full_name)} (@${esc(c.user.username)})</td>
+        <td>${esc(c.roles || c.skills)}</td>
+        <td>${esc(c.mode || "Hybrid")}</td>
+        <td><span class="tag ${c.status === 'Open' ? '' : 'warn'}">${esc(c.status)}</span></td>
+        <td><strong>${c.request_count}</strong> requests</td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <a href="/collaboration-details.html?id=${c.id}" class="btn small" target="_blank">Review & Details</a>
+            <button class="btn small secondary" onclick="toggleAdminCollabStatus(${c.id})">${c.status === 'Open' ? 'Close' : 'Re-open'}</button>
+            <button class="btn small secondary" onclick="deleteAdminCollab(${c.id}, '${esc(c.title)}')" style="color:var(--danger)">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="8" style="color:var(--danger); text-align:center;">${esc(err.message)}</td></tr>`;
+  }
+}
+
+async function toggleAdminCollabStatus(id) {
+  try {
+    await api(`/api/collaborations/${id}/status`, { method: 'PUT' });
+    toast('Collaboration status updated.');
+    loadAdminCollaborations();
+  } catch (err) {
+    toast(err.message || 'Failed to toggle status.');
+  }
+}
+
+async function deleteAdminCollab(id, title) {
+  if (!confirm(`Are you sure you want to delete project "${title}"?`)) return;
+  try {
+    await api(`/api/collaborations/${id}`, { method: 'DELETE' });
+    toast('Collaboration deleted.');
+    loadAdminCollaborations();
+  } catch (err) {
+    toast(err.message || 'Failed to delete collaboration.');
   }
 }
 

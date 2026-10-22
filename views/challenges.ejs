@@ -11,8 +11,13 @@
 <body>
   <div id="navbar"></div>
   <main class="container">
-    <div class="page-title"><h1>Creative challenges</h1>
-      <button class="btn" id="toggle-form">+ New challenge</button></div>
+    <div class="page-title">
+      <h1>Creative challenges</h1>
+      <div style="display:flex; gap:8px;">
+        <a href="applications.html" class="btn secondary">My Applications</a>
+        <button class="btn" id="toggle-form">+ New challenge</button>
+      </div>
+    </div>
     <div class="card hidden" id="challenge-form-card" style="margin-bottom:20px">
       <h3>Start a challenge</h3>
       <div id="form-message" class="message error hidden"></div>

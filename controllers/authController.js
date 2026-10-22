@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const UserModel = require('../models/userModel');
+const EmailService = require('../services/emailService');
+const { db } = require('../config/db');
 
 const USERNAME_REGEX = /^[A-Za-z0-9_]{3,20}$/;
 const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -75,17 +77,18 @@ const AuthController = {
         hashedPassword
       });
 
-      const token = crypto.randomBytes(32).toString('hex');
-      await UserModel.createSession(user.id, token);
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      await UserModel.setVerificationToken(user.id, verificationToken, expiresAt);
 
-      if (req.session) {
-        req.session.user = { id: user.id, username: user.username, email: user.email, full_name: user.full_name };
-      }
+      await EmailService.sendVerificationEmail(user.email, user.full_name, verificationToken);
 
-      res.json({
-        message: 'Account created. You can log in now.',
-        token,
-        user: UserModel.formatSmallUser(user)
+      res.status(201).json({
+        message: 'Account created! Please check your email to verify your account before logging in.',
+        email: user.email,
+        requires_verification: true,
+        verified: false,
+        verificationToken
       });
     } catch (err) {
       next(err);
@@ -114,6 +117,15 @@ const AuthController = {
         return res.status(401).json({ detail: 'Incorrect email or password.' });
       }
 
+      // Check email verification status
+      if (user.email_verified === false) {
+        return res.status(403).json({
+          detail: 'Your email address has not been verified yet. Please verify your account before logging in.',
+          unverified: true,
+          email: user.email
+        });
+      }
+
       const token = crypto.randomBytes(32).toString('hex');
       await UserModel.createSession(user.id, token);
 
@@ -123,6 +135,127 @@ const AuthController = {
 
       const me = await getMeDict(user.id);
       res.json({ token, user: me });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async verifyEmail(req, res, next) {
+    try {
+      const token = (req.query.token || req.body.token || '').trim();
+      if (!token) {
+        return res.status(400).json({ detail: 'Verification token is required.' });
+      }
+
+      const user = await UserModel.findByVerificationToken(token);
+      if (!user) {
+        return res.status(400).json({ detail: 'Invalid or already-used verification link.' });
+      }
+
+      if (user.email_verified) {
+        return res.json({ message: 'Your email address is already verified. You can log in.', alreadyVerified: true });
+      }
+
+      if (user.verification_token_expires && new Date() > new Date(user.verification_token_expires)) {
+        return res.status(400).json({ detail: 'This verification link has expired. Please request a new one.', expired: true, email: user.email });
+      }
+
+      await UserModel.verifyEmail(user.id);
+      res.json({ message: 'Your email has been verified successfully! You can now log in.', verified: true });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async resendVerification(req, res, next) {
+    try {
+      const email = (req.body.email || '').trim().toLowerCase();
+      if (!email) {
+        return res.status(400).json({ detail: 'Please enter your registered email address.' });
+      }
+
+      const user = await UserModel.findByEmail(email);
+      if (!user) {
+        return res.json({ message: 'If an unverified account with that email exists, a verification link has been sent.' });
+      }
+
+      if (user.email_verified) {
+        return res.json({ message: 'Your account is already verified. You can log in directly.', alreadyVerified: true });
+      }
+
+      // 60-second rate-limit
+      if (user.verification_token_expires) {
+        const issuedAt = new Date(new Date(user.verification_token_expires).getTime() - 24 * 60 * 60 * 1000);
+        const elapsedSeconds = (Date.now() - issuedAt.getTime()) / 1000;
+        if (elapsedSeconds < 60) {
+          return res.status(429).json({ detail: `Please wait ${Math.ceil(60 - elapsedSeconds)} seconds before requesting another verification email.` });
+        }
+      }
+
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await UserModel.setVerificationToken(user.id, verificationToken, expiresAt);
+
+      await EmailService.sendVerificationEmail(user.email, user.full_name, verificationToken);
+      res.json({ message: 'A new verification email has been sent. Please check your inbox and spam folder.' });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async forgotPassword(req, res, next) {
+    try {
+      const email = (req.body.email || '').trim().toLowerCase();
+      if (!email) {
+        return res.status(400).json({ detail: 'Please enter your registered email address.' });
+      }
+
+      const user = await UserModel.findByEmail(email);
+      if (user) {
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        await UserModel.setResetPasswordToken(user.id, resetToken, expiresAt);
+        await EmailService.sendPasswordResetEmail(user.email, user.full_name, resetToken);
+      }
+
+      // Generic response to prevent account enumeration
+      res.json({ message: 'If an account with that email exists, password reset instructions have been sent.' });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async resetPassword(req, res, next) {
+    try {
+      const { token, password, confirm_password } = req.body;
+      if (!token || !token.trim()) {
+        return res.status(400).json({ detail: 'Password reset token is required.' });
+      }
+
+      if (!password || password.length < 6) {
+        return res.status(400).json({ detail: 'Password must be at least 6 characters.' });
+      }
+
+      if (password !== confirm_password) {
+        return res.status(400).json({ detail: 'Passwords do not match.' });
+      }
+
+      const user = await UserModel.findByResetPasswordToken(token.trim());
+      if (!user) {
+        return res.status(400).json({ detail: 'Invalid or already-used password reset link. Please request a new one.' });
+      }
+
+      if (user.reset_password_expires && new Date() > new Date(user.reset_password_expires)) {
+        return res.status(400).json({ detail: 'This password reset link has expired. Please request a new one.', expired: true });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await UserModel.resetPassword(user.id, hashedPassword);
+
+      // Invalidate existing sessions for security
+      await db.none('DELETE FROM login_sessions WHERE user_id = $1', [user.id]);
+
+      res.json({ message: 'Your password has been successfully reset! You can now log in with your new password.' });
     } catch (err) {
       next(err);
     }

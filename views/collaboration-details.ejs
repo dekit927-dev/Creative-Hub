@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collaboration Details - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .details-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .detail-section {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .detail-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .detail-section h3 {
+      font-size: 1.15rem;
+      color: var(--heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin: 14px 0 20px;
+    }
+    .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      background: var(--blue-pale);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+    }
+    .meta-item strong {
+      color: var(--ink);
+    }
+    .status-badge-lg {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .status-badge-lg.pending { background: #FEF3C7; color: #B45309; }
+    .status-badge-lg.under-review { background: #DBEAFE; color: #1D4ED8; }
+    .status-badge-lg.accepted { background: #D1FAE5; color: #047857; }
+    .status-badge-lg.rejected { background: #FEE2E2; color: #B91C1C; }
+    .status-badge-lg.withdrawn { background: #F1F5F9; color: #64748B; }
+    .feedback-callout {
+      background: rgba(37, 99, 235, 0.05);
+      border-left: 4px solid var(--blue-primary);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-top: 12px;
+      font-size: 0.92rem;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-card {
+      background: var(--card);
+      max-width: 520px;
+      width: 100%;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-hover);
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container" style="max-width:1100px;">
+    <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+      <a href="collaboration.html" class="muted" style="display:inline-flex; align-items:center; gap:6px; font-weight:600;">
+        &larr; Back to Collaboration Hub
+      </a>
+      <a href="applications.html" class="btn small secondary" style="font-weight:600;">
+        My Applications
+      </a>
+    </div>
+
+    <div id="loading" class="card" style="text-align:center; padding:40px;">
+      <p class="muted">Loading collaboration details...</p>
+    </div>
+
+    <div id="content" class="hidden">
+      <!-- Collaboration Header Card -->
+      <div class="card" style="margin-bottom:24px; position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+              <span class="tag" id="collab-status-tag">Open</span>
+              <span class="tag" id="collab-category">Category</span>
+              <span class="tag" id="collab-mode">Mode</span>
+            </div>
+            <h1 id="collab-title" style="margin:0 0 8px; font-size:1.85rem; color:var(--heading);">Project Title</h1>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+              <span class="muted" style="font-size:0.95rem;">Initiated by</span>
+              <a id="collab-user-link" href="#" class="row" style="color:var(--ink); font-weight:700;">
+                <span id="collab-user-avatar"></span>
+                <span id="collab-user-name">User</span>
+              </a>
+            </div>
+          </div>
+          <div id="collab-top-action"></div>
+        </div>
+
+        <div class="meta-row">
+          <div class="meta-item"><span>&#128101;</span> <span>Positions: <strong id="collab-positions">--</strong></span></div>
+          <div class="meta-item"><span>&#9201;</span> <span>Duration: <strong id="collab-duration">--</strong></span></div>
+          <div class="meta-item"><span>&#128205;</span> <span>Location: <strong id="collab-location">--</strong></span></div>
+          <div class="meta-item"><span>&#127891;</span> <span>Experience: <strong id="collab-experience">--</strong></span></div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="details-grid">
+        <!-- Left: Full Details Sections -->
+        <div class="card">
+          <div class="detail-section">
+            <h3>Project Overview & Goals</h3>
+            <p id="collab-description" style="line-height:1.7; color:var(--ink); white-space:pre-line;"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Required Roles & Skills</h3>
+            <p id="collab-roles" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Expected Deliverables & Outcomes</h3>
+            <p id="collab-deliverables" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Tools & Creative Mediums</h3>
+            <p id="collab-tools" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Perks & Compensation</h3>
+            <p id="collab-compensation" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+
+          <div class="detail-section">
+            <h3>Application Instructions</h3>
+            <p id="collab-application-instructions" style="line-height:1.6; color:var(--muted);"></p>
+          </div>
+        </div>
+
+        <!-- Right: Status, Action Card & Requesters -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <!-- Action & Status Card -->
+          <div class="card" id="action-card" style="border:2px solid var(--blue-border);">
+            <h3 style="margin-top:0; color:var(--heading); font-size:1.1rem;">Application Status</h3>
+            <div id="request-status-box" style="margin:12px 0;">
+              <!-- Dynamic status render -->
+            </div>
+            <div id="action-buttons-box">
+              <!-- Buttons dynamically inserted -->
+            </div>
+          </div>
+
+          <!-- Project Lead / Admin Review Box (if applicable) -->
+          <div class="card hidden" id="reviewer-box">
+            <h3 style="margin-top:0; color:var(--heading); font-size:1.1rem;">Join Requests & Applicants</h3>
+            <p class="muted" style="font-size:0.85rem; margin-bottom:12px;">Review student join requests and update status.</p>
+            <div id="requesters-list" class="stack" style="gap:12px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Modal -->
+    <div id="apply-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h3 style="margin-top:0; color:var(--heading);">Request to Join Collaboration</h3>
+        <p class="muted" style="font-size:0.88rem; margin-bottom:16px;">
+          Introduce yourself, specify the role you are interested in, and share relevant portfolio samples.
+        </p>
+        <div id="modal-error" class="message error hidden"></div>
+        <form id="apply-form">
+          <label for="apply-message">Your Introduction & Relevant Experience</label>
+          <textarea id="apply-message" rows="5" placeholder="Which role would you like to take on? Mention your skills, tools you use, or links to your previous work..." style="margin-bottom:16px;"></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn secondary" id="close-modal-btn">Cancel</button>
+            <button type="submit" class="btn" id="confirm-apply-btn">Submit Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/collaboration-details.js"></script>
+</body>
+</html>

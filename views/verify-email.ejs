@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verify Email - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="card auth-card" style="text-align:center;">
+      <a class="logo" href="index.html" style="justify-content:center; margin-bottom:16px;"><span class="logo-mark">C</span>Creative Hub</a>
+      
+      <div id="verify-state-loading">
+        <div class="spinner-ring" style="margin:24px auto;"></div>
+        <h2>Verifying your email...</h2>
+        <p class="muted">Please wait while we confirm your email address.</p>
+      </div>
+
+      <div id="verify-state-success" class="hidden">
+        <div style="width:60px; height:60px; border-radius:50%; background:#ECFDF5; color:#10B981; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:32px;">&#10003;</div>
+        <h2 style="color:#065F46;">Email Verified!</h2>
+        <p class="muted" id="success-desc" style="margin-bottom:24px;">Your account has been successfully verified. You can now log in and explore the creative community.</p>
+        <a class="btn full" href="login.html">Proceed to Log in</a>
+      </div>
+
+      <div id="verify-state-error" class="hidden">
+        <div style="width:60px; height:60px; border-radius:50%; background:#FEF2F2; color:#EF4444; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:28px;">!</div>
+        <h2 style="color:#991B1B;">Verification Failed</h2>
+        <div id="error-message" class="message error" style="margin-bottom:20px;"></div>
+        
+        <div id="resend-box" style="margin-top:20px; text-align:left; border-top:1px solid var(--line); padding-top:20px;">
+          <h3 style="font-size:1.05rem; margin-bottom:8px;">Request a new verification email</h3>
+          <p class="muted" style="font-size:0.88rem; margin-bottom:12px;">Enter your registered email address below:</p>
+          <form id="resend-form">
+            <input type="email" id="resend-email" placeholder="you@sherubtse.edu.bt" required>
+            <button class="btn full" type="submit" id="resend-btn" style="margin-top:8px;">Resend Verification Link</button>
+          </form>
+          <div id="resend-result" class="message hidden" style="margin-top:12px;"></div>
+        </div>
+
+        <p class="muted" style="margin-top:20px;"><a href="login.html">Back to Log in</a></p>
+      </div>
+
+      <div id="verify-state-no-token" class="hidden">
+        <div style="width:60px; height:60px; border-radius:50%; background:#EFF6FF; color:#2563EB; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:28px;">&#9993;</div>
+        <h2>Verify Your Email</h2>
+        <p class="muted" style="margin-bottom:20px;">Please check your inbox for the verification email sent during registration and click the link inside.</p>
+        
+        <div style="text-align:left; border-top:1px solid var(--line); padding-top:20px;">
+          <h3 style="font-size:1.05rem; margin-bottom:8px;">Need another verification link?</h3>
+          <form id="direct-resend-form">
+            <input type="email" id="direct-resend-email" placeholder="your-email@sherubtse.edu.bt" required>
+            <button class="btn full" type="submit" id="direct-resend-btn" style="margin-top:8px;">Send Verification Email</button>
+          </form>
+          <div id="direct-resend-result" class="message hidden" style="margin-top:12px;"></div>
+        </div>
+
+        <p class="muted" style="margin-top:20px;"><a href="login.html">Back to Log in</a></p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    (async function() {
+      const token = getParam("token");
+      const loadingEl = document.getElementById("verify-state-loading");
+      const successEl = document.getElementById("verify-state-success");
+      const errorEl = document.getElementById("verify-state-error");
+      const noTokenEl = document.getElementById("verify-state-no-token");
+      const errorMsgEl = document.getElementById("error-message");
+      const successDesc = document.getElementById("success-desc");
+
+      if (!token) {
+        loadingEl.classList.add("hidden");
+        noTokenEl.classList.remove("hidden");
+      } else {
+        try {
+          const res = await api("/api/verify-email?token=" + encodeURIComponent(token));
+          loadingEl.classList.add("hidden");
+          successEl.classList.remove("hidden");
+          if (res.alreadyVerified) {
+            successDesc.textContent = "Your email address is already verified. You can log in directly.";
+          }
+        } catch (err) {
+          loadingEl.classList.add("hidden");
+          errorEl.classList.remove("hidden");
+          errorMsgEl.textContent = err.message || "Invalid or expired verification link.";
+        }
+      }
+
+      // Handle resend forms
+      const setupResend = (formId, inputId, btnId, resultId) => {
+        const form = document.getElementById(formId);
+        if (!form) return;
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById(inputId).value.trim();
+          const btn = document.getElementById(btnId);
+          const result = document.getElementById(resultId);
+          if (!email) return;
+          btn.disabled = true;
+          btn.textContent = "Sending...";
+          result.className = "message hidden";
+          try {
+            const res = await api("/api/resend-verification", { method: "POST", body: { email } });
+            result.className = "message info";
+            result.textContent = res.message || "Verification email sent. Please check your inbox.";
+            result.classList.remove("hidden");
+          } catch (error) {
+            result.className = "message error";
+            result.textContent = error.message;
+            result.classList.remove("hidden");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Resend Verification Link";
+          }
+        });
+      };
+
+      setupResend("resend-form", "resend-email", "resend-btn", "resend-result");
+      setupResend("direct-resend-form", "direct-resend-email", "direct-resend-btn", "direct-resend-result");
+    })();
+  </script>
+</body>
+</html>

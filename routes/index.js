@@ -10,17 +10,29 @@ router.get('/index.html', ViewController.renderIndex);
 router.get('/home', ViewController.renderHome);
 router.get('/home.html', ViewController.renderHome);
 
-// Auth
+// Auth & Verification
 router.get('/login', ViewController.renderLogin);
 router.get('/login.html', ViewController.renderLogin);
 router.get('/register', ViewController.renderRegister);
 router.get('/register.html', ViewController.renderRegister);
+router.get('/verify-email', ViewController.renderVerifyEmail);
+router.get('/verify-email.html', ViewController.renderVerifyEmail);
+router.get('/forgot-password', ViewController.renderForgotPassword);
+router.get('/forgot-password.html', ViewController.renderForgotPassword);
+router.get('/reset-password', ViewController.renderResetPassword);
+router.get('/reset-password.html', ViewController.renderResetPassword);
 
 // Community & Features
 router.get('/challenges', ViewController.renderChallenges);
 router.get('/challenges.html', ViewController.renderChallenges);
+router.get('/challenge-details', ViewController.renderChallengeDetails);
+router.get('/challenge-details.html', ViewController.renderChallengeDetails);
 router.get('/collaboration', ViewController.renderCollaboration);
 router.get('/collaboration.html', ViewController.renderCollaboration);
+router.get('/collaboration-details', ViewController.renderCollaborationDetails);
+router.get('/collaboration-details.html', ViewController.renderCollaborationDetails);
+router.get('/applications', ViewController.renderApplications);
+router.get('/applications.html', ViewController.renderApplications);
 router.get('/connect', ViewController.renderConnect);
 router.get('/connect.html', ViewController.renderConnect);
 router.get('/create', ViewController.renderCreate);

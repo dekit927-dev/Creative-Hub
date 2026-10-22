@@ -160,6 +160,48 @@ const UserModel = {
       'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, full_name, username, email, role, status',
       [role, userId]
     );
+  },
+
+  async setVerificationToken(userId, token, expiresAt) {
+    return db.none(
+      'UPDATE users SET verification_token = $1, verification_token_expires = $2 WHERE id = $3',
+      [token, expiresAt, userId]
+    );
+  },
+
+  async findByVerificationToken(token) {
+    return db.oneOrNone(
+      'SELECT * FROM users WHERE verification_token = $1',
+      [token]
+    );
+  },
+
+  async verifyEmail(userId) {
+    return db.none(
+      'UPDATE users SET email_verified = TRUE, verification_token = NULL, verification_token_expires = NULL WHERE id = $1',
+      [userId]
+    );
+  },
+
+  async setResetPasswordToken(userId, token, expiresAt) {
+    return db.none(
+      'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3',
+      [token, expiresAt, userId]
+    );
+  },
+
+  async findByResetPasswordToken(token) {
+    return db.oneOrNone(
+      'SELECT * FROM users WHERE reset_password_token = $1',
+      [token]
+    );
+  },
+
+  async resetPassword(userId, hashedPassword) {
+    return db.none(
+      'UPDATE users SET password = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE id = $2',
+      [hashedPassword, userId]
+    );
   }
 };
 

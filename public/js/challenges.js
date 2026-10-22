@@ -1,17 +1,33 @@
 // Challenges page: list, join/leave, see participants, create a challenge.
 function challengeHtml(ch) {
   const ended = new Date(ch.deadline) < new Date(new Date().toDateString());
+  const myApp = ch.my_application;
+  let statusBadge = "";
+  if (myApp && myApp.status && myApp.status !== "Withdrawn") {
+    const norm = myApp.status.toLowerCase().replace(/\s+/g, "-");
+    statusBadge = ` <span class="tag" style="background:var(--blue-light); color:var(--blue-navy); font-weight:700;">Applied: ${esc(myApp.status)}</span>`;
+  }
+
   return `<div class="card item-card" id="challenge-${ch.id}">
     <div class="row" style="justify-content:space-between">
-      <div><span class="tag">${esc(ch.category)}</span>${ended ? ' <span class="tag warn">Ended</span>' : ""}</div>
+      <div>
+        <span class="tag">${esc(ch.category)}</span>
+        ${ch.mode ? `<span class="tag" style="background:var(--blue-pale);">${esc(ch.mode)}</span>` : ""}
+        ${statusBadge}
+        ${ended ? ' <span class="tag warn">Ended</span>' : ""}
+      </div>
       <span class="muted">Deadline: ${formatDate(ch.deadline)}</span>
     </div>
-    <h3>${esc(ch.title)}</h3>
-    <p class="muted">${esc(ch.description)}</p>
-    <div class="row">
-      ${ch.joined
-        ? `<button class="btn secondary small" onclick="leaveChallenge(${ch.id})">Joined - tap to leave</button>`
-        : `<button class="btn small" ${ended ? "disabled" : ""} onclick="joinChallenge(${ch.id})">Join challenge</button>`}
+    <h3><a href="challenge-details.html?id=${ch.id}" style="color:inherit">${esc(ch.title)}</a></h3>
+    <p class="muted" style="margin-bottom:8px;">${esc(ch.short_summary || ch.description)}</p>
+    <div class="muted" style="font-size:0.83rem; margin-bottom:12px;">By ${esc(ch.organizer || "Sherubtse Creative Club")} &middot; ${esc(ch.location || "Kanglung Campus")}</div>
+    <div class="row" style="justify-content:space-between; flex-wrap:wrap; gap:8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="challenge-details.html?id=${ch.id}" class="btn small">View Details & Guidelines</a>
+        ${ch.joined
+          ? `<button class="btn secondary small" onclick="leaveChallenge(${ch.id})">Joined (Leave)</button>`
+          : `<button class="btn secondary small" ${ended ? "disabled" : ""} onclick="joinChallenge(${ch.id})">Quick Join</button>`}
+      </div>
       <button class="btn secondary small" onclick="showParticipants(${ch.id})">${ch.participants} participant${ch.participants === 1 ? "" : "s"}</button>
     </div>
     <div class="people" id="people-${ch.id}"></div>

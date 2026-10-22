@@ -4,20 +4,55 @@ const registerForm = document.getElementById("register-form");
 
 if (localStorage.getItem("token") && loginForm) window.location.href = "home.html";
 
-// Check if redirected after registration with prefilled email
+// Check if redirected with status
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get("registered") === "true") {
+if (urlParams.get("verified") === "true") {
+  showMessage("message", "Your email has been verified successfully! You can now log in.", "info");
+} else if (urlParams.get("registered") === "true") {
   const emailParam = urlParams.get("email");
   if (emailParam && document.getElementById("email")) {
     document.getElementById("email").value = emailParam;
   }
-  showMessage("message", "Account created successfully! Please enter your password to log in.", "info");
+  showMessage("message", "Account created successfully! We sent a verification link to your email. Please verify before logging in.", "info");
+  const unverifiedBox = document.getElementById("unverified-box");
+  if (unverifiedBox) unverifiedBox.classList.remove("hidden");
+} else if (urlParams.get("reset") === "true") {
+  showMessage("message", "Password has been reset successfully. Please log in with your new password.", "info");
 }
 
+let lastUnverifiedEmail = urlParams.get("email") || "";
+
 if (loginForm) {
+  const unverifiedBox = document.getElementById("unverified-box");
+  const resendBtn = document.getElementById("login-resend-btn");
+
+  if (resendBtn) {
+    resendBtn.addEventListener("click", async () => {
+      const email = (document.getElementById("email") ? document.getElementById("email").value.trim() : "") || lastUnverifiedEmail;
+      if (!email) {
+        showMessage("message", "Please enter your email address to receive a verification link.");
+        return;
+      }
+      resendBtn.disabled = true;
+      const originalText = resendBtn.textContent;
+      resendBtn.textContent = "Sending...";
+      try {
+        const res = await api("/api/resend-verification", { method: "POST", body: { email } });
+        toast(res.message || "Verification link sent to your email!");
+        showMessage("message", res.message || "Verification link sent! Check your inbox.", "info");
+      } catch (err) {
+        showMessage("message", err.message || "Failed to resend verification email.");
+      } finally {
+        resendBtn.disabled = false;
+        resendBtn.textContent = originalText;
+      }
+    });
+  }
+
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     hideMessage("message");
+    if (unverifiedBox) unverifiedBox.classList.add("hidden");
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     if (!email || !password) return showMessage("message", "Please enter your email and password.");
@@ -35,6 +70,10 @@ if (loginForm) {
       window.location.href = "home.html";
     } catch (error) {
       showMessage("message", error.message);
+      if (error.unverified) {
+        lastUnverifiedEmail = error.email || email;
+        if (unverifiedBox) unverifiedBox.classList.remove("hidden");
+      }
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
