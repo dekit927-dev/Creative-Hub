@@ -1084,6 +1084,7 @@ html {
 .avatar {
   width: 40px;
   height: 40px;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -1111,6 +1112,12 @@ html {
   width: 108px;
   height: 108px;
   font-size: 2.1rem;
+}
+
+.avatar.large {
+  width: 64px;
+  height: 64px;
+  font-size: 1.4rem;
 }
 
 .avatar.small {
@@ -3139,6 +3146,47 @@ label {
   flex-wrap: wrap;
 }
 
+/* Recent student registrations: strictly horizontal & responsive avatar + name */
+.recent-student-flex {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.recent-student-flex .avatar {
+  flex-shrink: 0 !important;
+}
+
+.recent-student-info {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+
+.recent-student-name {
+  display: block !important;
+  font-size: 0.9rem !important;
+  color: var(--blue-navy) !important;
+  line-height: 1.3 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.recent-student-meta {
+  display: block !important;
+  font-size: 0.78rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
 .mobile-only {
   display: none !important;
 }
@@ -3202,19 +3250,23 @@ label {
     border: none !important;
   }
 
-  /* Recent Registrations Mobile Layout */
+  /* Recent Registrations Mobile Layout - strictly horizontal & responsive */
   #overview-recent-users tr.overview-row {
     display: flex !important;
+    flex-direction: row !important;
     justify-content: space-between !important;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 12px !important;
+    padding: 10px 0 !important;
   }
   #overview-recent-users tr.overview-row .col-main {
     flex: 1 1 auto !important;
     min-width: 0 !important;
+    width: auto !important;
   }
   #overview-recent-users tr.overview-row .col-status {
     flex: 0 0 auto !important;
+    width: auto !important;
     text-align: right !important;
   }
 

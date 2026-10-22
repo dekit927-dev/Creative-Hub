@@ -1,4 +1,6 @@
+const bcrypt = require('bcrypt');
 const AdminModel = require('../models/adminModel');
+const UserModel = require('../models/userModel');
 const CategoryModel = require('../models/categoryModel');
 const ReportModel = require('../models/reportModel');
 const CreationModel = require('../models/creationModel');
@@ -204,6 +206,84 @@ const AdminController = {
 
       const updated = await AdminModel.setUserStatus(userId, status, req.user.id, reason || '');
       res.json({ message: `User status updated to ${status}.`, user: updated });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async createUser(req, res, next) {
+    try {
+      const { full_name, username, email, password, role = 'user', status = 'active', bio = '' } = req.body;
+
+      if (!full_name || !full_name.trim() || !username || !username.trim() || !email || !email.trim() || !password) {
+        return res.status(400).json({ detail: 'Please fill in all required fields (full name, username, email, password).' });
+      }
+
+      const USERNAME_REGEX = /^[A-Za-z0-9_]{3,20}$/;
+      const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+      if (!USERNAME_REGEX.test(username.trim())) {
+        return res.status(400).json({ detail: 'Username must be 3-20 characters: letters, numbers or underscores.' });
+      }
+
+      if (!EMAIL_REGEX.test(email.trim())) {
+        return res.status(400).json({ detail: 'Please enter a valid email address.' });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ detail: 'Password must be at least 6 characters.' });
+      }
+
+      if (!['user', 'admin'].includes(role)) {
+        return res.status(400).json({ detail: "Role must be 'user' or 'admin'." });
+      }
+
+      if (!['active', 'suspended'].includes(status)) {
+        return res.status(400).json({ detail: "Status must be 'active' or 'suspended'." });
+      }
+
+      const existingUser = await UserModel.findByUsername(username.trim());
+      if (existingUser) {
+        return res.status(400).json({ detail: 'That username is already taken.' });
+      }
+
+      const existingEmail = await UserModel.findByEmail(email.trim());
+      if (existingEmail) {
+        return res.status(400).json({ detail: 'An account with that email already exists.' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = await db.tx(async t => {
+        const created = await t.one(
+          `INSERT INTO users (full_name, username, email, password, role, status, bio)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           RETURNING id, full_name, username, email, role, status, bio, created_at`,
+          [full_name.trim(), username.trim(), email.trim().toLowerCase(), hashedPassword, role, status, bio ? bio.trim() : '']
+        );
+
+        await t.none(
+          `INSERT INTO moderation_logs (admin_id, action, target_type, target_id, reason)
+           VALUES ($1, 'create_user', 'user', $2, $3)`,
+          [req.user.id, created.id, `Manual user registration by admin: ${created.username}`]
+        );
+
+        return created;
+      });
+
+      res.status(201).json({
+        message: 'User created successfully.',
+        user: {
+          id: newUser.id,
+          full_name: newUser.full_name,
+          username: newUser.username,
+          email: newUser.email,
+          role: newUser.role,
+          status: newUser.status,
+          bio: newUser.bio,
+          created_at: newUser.created_at.toISOString()
+        }
+      });
     } catch (err) {
       next(err);
     }

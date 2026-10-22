@@ -285,11 +285,11 @@ async function loadOverviewData() {
       recentUsersBody.innerHTML = data.recent_users.map(u => `
         <tr class="overview-row">
           <td class="col-main">
-            <div style="display:flex; align-items:center; gap:10px;">
+            <div class="recent-student-flex">
               ${avatar(u, 'small')}
-              <div style="min-width:0;">
-                <strong style="display:block; font-size:0.9rem; color:var(--blue-navy); line-height:1.3;">${esc(u.full_name)}</strong>
-                <div class="muted" style="font-size:0.78rem; word-break:break-all;">${esc(u.email || '@' + u.username)}</div>
+              <div class="recent-student-info">
+                <strong class="recent-student-name">${esc(u.full_name)}</strong>
+                <span class="muted recent-student-meta">${esc(u.email || '@' + u.username)}</span>
               </div>
             </div>
           </td>
@@ -1127,7 +1127,7 @@ async function loadContentAnalytics() {
         <td><strong>#${item.rank}</strong></td>
         <td>
           <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${item.image}" style="width:48px; height:48px; object-fit:cover; border-radius:8px;" alt="${esc(item.title)}">
+            <img src="${item.image}" style="width:48px; height:48px; object-fit:cover; border-radius:8px;" alt="${esc(item.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';">
             <div>
               <a href="creation-details.html?id=${item.id}" target="_blank" style="color:inherit; font-weight:700;">${esc(item.title)}</a>
               <div class="muted" style="font-size:0.78rem;">${esc(item.description.slice(0, 50))}${item.description.length > 50 ? '...' : ''}</div>
@@ -1265,6 +1265,61 @@ async function submitUserStatusChange() {
   }
 }
 
+function openCreateUserModal() {
+  const modal = document.getElementById('create-user-modal');
+  if (!modal) return;
+  const form = document.getElementById('create-user-form');
+  if (form) form.reset();
+  modal.classList.remove('hidden');
+  const input = document.getElementById('create-user-fullname');
+  if (input) input.focus();
+}
+
+function closeCreateUserModal() {
+  const modal = document.getElementById('create-user-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function handleCreateUserSubmit(event) {
+  event.preventDefault();
+  const submitBtn = document.getElementById('create-user-submit-btn');
+  const originalText = submitBtn ? submitBtn.textContent : 'Create User';
+
+  const full_name = document.getElementById('create-user-fullname').value.trim();
+  const username = document.getElementById('create-user-username').value.trim();
+  const email = document.getElementById('create-user-email').value.trim();
+  const password = document.getElementById('create-user-password').value;
+  const role = document.getElementById('create-user-role').value;
+  const status = document.getElementById('create-user-status').value;
+  const bio = document.getElementById('create-user-bio').value.trim();
+
+  try {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating...';
+    }
+
+    const res = await api('/api/admin/users', {
+      method: 'POST',
+      body: { full_name, username, email, password, role, status, bio }
+    });
+
+    toast(res.message || 'User created successfully!');
+    closeCreateUserModal();
+    // Reload user management table
+    loadUsersList();
+    // Refresh dashboard statistics so total users and recent registrations update
+    loadOverviewData();
+  } catch (err) {
+    alert(err.message || 'Failed to create user.');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
+  }
+}
+
 // ================= 6. CREATIVE-WORK MANAGEMENT =================
 async function loadCreationsManagement() {
   try {
@@ -1274,7 +1329,7 @@ async function loadCreationsManagement() {
     body.innerHTML = data.items.map(item => `
       <tr>
         <td>
-          <img src="${item.image}" style="width:48px; height:48px; object-fit:cover; border-radius:6px;" alt="">
+          <img src="${item.image}" style="width:48px; height:48px; object-fit:cover; border-radius:6px;" alt="" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';">
         </td>
         <td>
           <a href="creation-details.html?id=${item.id}" target="_blank" style="color:inherit; font-weight:600;">${esc(item.title)}</a>

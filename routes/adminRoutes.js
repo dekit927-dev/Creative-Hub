@@ -35,6 +35,7 @@ router.get('/analytics/content-performance', AdminController.getContentAnalytics
 
 // 3. User Management
 router.get('/users', AdminController.listUsers);
+router.post('/users', AdminController.createUser);
 router.get('/users/:id', AdminController.getUser);
 router.patch('/users/:id/status', AdminController.setUserStatus);
 

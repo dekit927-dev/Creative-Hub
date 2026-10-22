@@ -31,7 +31,16 @@ function esc(text) {
 }
 
 function fileUrl(path) {
-  return path ? API + path : "";
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
+    return path;
+  }
+  let clean = path.replace(/\\/g, "/");
+  if (!clean.startsWith("/")) clean = "/" + clean;
+  if (!clean.startsWith("/uploads/") && !clean.startsWith("/images/") && !clean.startsWith("/css/") && !clean.startsWith("/js/")) {
+    clean = "/uploads" + clean;
+  }
+  return API + clean;
 }
 
 function formatDate(isoString) {
@@ -50,10 +59,12 @@ function getParam(name) {
 }
 
 function avatar(user, extraClass = "") {
+  if (!user) return `<span class="avatar initials ${extraClass}">?</span>`;
+  const fullName = user.full_name || user.name || user.username || "User";
+  const initials = fullName.split(" ").filter(Boolean).map(w => w[0]).slice(0, 2).join("").toUpperCase() || "U";
   if (user.profile_picture) {
-    return `<img class="avatar ${extraClass}" src="${fileUrl(user.profile_picture)}" alt="${esc(user.full_name)}">`;
+    return `<img class="avatar ${extraClass}" src="${fileUrl(user.profile_picture)}" alt="${esc(fullName)}" onerror="this.onerror=null; this.outerHTML='<span class=\\'avatar initials ${extraClass}\\'>${esc(initials)}</span>';">`;
   }
-  const initials = user.full_name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
   return `<span class="avatar initials ${extraClass}">${esc(initials)}</span>`;
 }
 
@@ -132,11 +143,31 @@ async function initPage(activeLink) {
 
 function renderNavbar(activeLink) {
   const links = [
-    { href: "home.html", name: "Home", icon: "&#127968;" },
-    { href: "challenges.html", name: "Challenges", icon: "&#127942;" },
-    { href: "connect.html", name: "Connect", icon: "&#128101;" },
-    { href: "collaboration.html", name: "Collaborate", icon: "&#129309;" },
-    { href: "messages.html", name: "Messages", icon: "&#128172;" }
+    {
+      href: "home.html",
+      name: "Home",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`
+    },
+    {
+      href: "challenges.html",
+      name: "Challenges",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>`
+    },
+    {
+      href: "connect.html",
+      name: "Connect",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`
+    },
+    {
+      href: "collaboration.html",
+      name: "Collaborate",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`
+    },
+    {
+      href: "messages.html",
+      name: "Messages",
+      icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`
+    }
   ];
 
   const isAdmin = window.location.pathname.startsWith("/admin") || activeLink === "admin";
@@ -171,15 +202,23 @@ function renderNavbar(activeLink) {
 
       <!-- Action items -->
       <div class="nav-right">
-        <a class="icon-btn nav-search-icon-btn" href="search.html" title="Search" aria-label="Search">&#128269;</a>
+        <a class="icon-btn nav-search-icon-btn" href="search.html" title="Search" aria-label="Search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </a>
         ${!isAdmin && currentUser && currentUser.role === "admin" ? `<a class="btn small secondary nav-admin-btn" href="/admin" style="font-weight:700">Admin</a>` : ""}
         <a class="btn small nav-create-btn ${isAdmin ? "hide-on-mobile" : ""}" href="create.html">+ Create</a>
         <div class="dropdown-wrap">
-          <button class="icon-btn" id="bell-btn" title="Notifications" aria-label="Notifications">&#128276;<span class="badge hidden" id="bell-badge">0</span></button>
+          <button class="icon-btn" id="bell-btn" title="Notifications" aria-label="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="badge hidden" id="bell-badge">0</span>
+          </button>
           <div class="dropdown hidden" id="notif-panel"></div>
         </div>
         <a href="profile.html" title="My profile" class="nav-avatar-link">${avatar(currentUser)}</a>
-        <a href="settings.html" class="muted nav-settings-link" title="Settings">&#9881;<span class="settings-text"> Settings</span></a>
+        <a href="settings.html" class="muted nav-settings-link" title="Settings" style="display:inline-flex; align-items:center; gap:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span class="settings-text">Settings</span>
+        </a>
       </div>
     </div></nav>
 

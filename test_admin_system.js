@@ -239,6 +239,37 @@ async function runTests() {
     assert(reactivateRes.status === 200 && reactivateRes.data.user.status === 'active',
       `Admin can reactivate user ${targetUser.full_name}`);
 
+    // Admin manually creates user
+    const newUsername = 'manual_user_' + Date.now().toString().slice(-6);
+    const createUserRes = await request('POST', '/api/admin/users', adminHeaders, {
+      full_name: 'Dechen Dorji',
+      username: newUsername,
+      email: `${newUsername}@sherubtse.edu.bt`,
+      password: 'testpassword123',
+      role: 'user',
+      status: 'active',
+      bio: 'Media & graphic design student at Sherubtse.'
+    });
+    assert(createUserRes.status === 201 && createUserRes.data.user && createUserRes.data.user.id,
+      `Admin can manually register new user (${newUsername})`);
+
+    // Verify newly created user can log in
+    const newLoginRes = await request('POST', '/api/login', {}, {
+      email: `${newUsername}@sherubtse.edu.bt`,
+      password: 'testpassword123'
+    });
+    assert(newLoginRes.status === 200 && newLoginRes.data.token,
+      'Newly registered user can log in successfully');
+
+    // Duplicate username is rejected
+    const dupRes = await request('POST', '/api/admin/users', adminHeaders, {
+      full_name: 'Dechen Duplicate',
+      username: newUsername,
+      email: `other_${newUsername}@sherubtse.edu.bt`,
+      password: 'testpassword123'
+    });
+    assert(dupRes.status === 400, 'Duplicate username registration rejected with 400 Bad Request');
+
     // 9. Content Moderation & Reports Tests
     console.log('\n--- TEST GROUP 8: CONTENT MODERATION & REPORTS QUEUE ---');
     // Student submits report
