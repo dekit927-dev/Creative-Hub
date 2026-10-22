@@ -16,9 +16,15 @@ async function loadCreation() {
     const mediaType = getMediaType(c.image, c.category);
     let mediaHtml = '';
     if (mediaType === 'video') {
+      const vSrc = fileUrl(c.image);
       mediaHtml = `
         <div class="details-media-container video-details-container">
-          <video class="details-img details-video-player" src="${fileUrl(c.image)}" controls playsinline autoplay muted preload="auto"></video>
+          <video class="details-img details-video-player" controls playsinline autoplay muted preload="auto" onerror="handleVideoError(this, '${vSrc}', '${esc(c.title)}')">
+            <source src="${vSrc}" type="video/mp4">
+            <source src="${vSrc}" type="video/webm">
+            <source src="${vSrc}" type="video/quicktime">
+            Your browser does not support HTML5 video.
+          </video>
         </div>`;
     } else if (mediaType === 'audio') {
       mediaHtml = `

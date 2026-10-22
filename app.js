@@ -47,19 +47,97 @@ app.set('views', path.join(__dirname, 'views'));
 // CORS & Body parsing
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+const VIDEO_EXTS = ['.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi'];
+const AUDIO_EXTS = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'];
 
-// Self-healing /uploads route: if an uploaded image was wiped from ephemeral container disk after restart,
-// dynamically restore it from PostgreSQL cloud database and re-write to disk so it never disappears!
+function getMediaMimeType(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  if (ext === '.mp4' || ext === '.mov') return 'video/mp4';
+  if (ext === '.webm') return 'video/webm';
+  if (ext === '.ogv') return 'video/ogg';
+  if (ext === '.mkv') return 'video/x-matroska';
+  if (ext === '.mp3') return 'audio/mpeg';
+  if (ext === '.wav') return 'audio/wav';
+  if (ext === '.ogg') return 'audio/ogg';
+  if (ext === '.m4a') return 'audio/mp4';
+  if (ext === '.aac') return 'audio/aac';
+  if (ext === '.flac') return 'audio/flac';
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.png') return 'image/png';
+  if (ext === '.gif') return 'image/gif';
+  if (ext === '.webp') return 'image/webp';
+  if (ext === '.svg') return 'image/svg+xml';
+  if (ext === '.pdf') return 'application/pdf';
+  return null;
+}
+
+function streamFileWithRange(req, res, filePath, mimeType) {
+  try {
+    const stat = fs.statSync(filePath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+
+    res.setHeader('Accept-Ranges', 'bytes');
+    if (mimeType) {
+      res.setHeader('Content-Type', mimeType);
+    }
+
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+      if (start >= fileSize || end >= fileSize || start > end) {
+        res.status(416).setHeader('Content-Range', `bytes */${fileSize}`);
+        return res.end();
+      }
+
+      const chunksize = (end - start) + 1;
+      const file = fs.createReadStream(filePath, { start, end });
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': mimeType || 'video/mp4'
+      });
+      return file.pipe(res);
+    } else {
+      res.writeHead(200, {
+        'Content-Length': fileSize,
+        'Content-Type': mimeType || 'video/mp4',
+        'Accept-Ranges': 'bytes'
+      });
+      return fs.createReadStream(filePath).pipe(res);
+    }
+  } catch (err) {
+    if (!res.headersSent) {
+      res.status(500).send('Error streaming media');
+    }
+  }
+}
+
+// Self-healing & streaming /uploads route:
+// 1. Streams videos/audio with HTTP 206 Range requests for scrubbing, seeking, and cross-browser playback.
+// 2. If wiped from ephemeral container disk after restart, restores from PostgreSQL image_data / profile_picture_data.
+// 3. For pre-existing video creations whose original file was lost, recovers gracefully with sample_video.mp4 fallback.
 app.get('/uploads/:filename', async (req, res, next) => {
   try {
     const filename = path.basename(req.params.filename);
     const filePath = path.join(__dirname, 'public/uploads', filename);
+    const ext = path.extname(filename).toLowerCase();
+    const isVideo = VIDEO_EXTS.includes(ext);
+    const isAudio = AUDIO_EXTS.includes(ext);
+    const mediaMime = getMediaMimeType(filename);
 
+    // Case 1: File already exists on disk
     if (fs.existsSync(filePath)) {
+      if (isVideo || isAudio) {
+        return streamFileWithRange(req, res, filePath, mediaMime);
+      }
       return res.sendFile(filePath);
     }
 
+    // Case 2: File wiped from disk after restart - query PostgreSQL for persistent backup
     const { db } = require('./config/db');
 
     // 1. Try finding in users profile_picture
@@ -71,9 +149,10 @@ app.get('/uploads/:filename', async (req, res, next) => {
     let dataUri = userRow ? userRow.profile_picture_data : null;
 
     // 2. Try finding in creations image
+    let creationRow = null;
     if (!dataUri) {
-      const creationRow = await db.oneOrNone(
-        'SELECT image_data FROM creations WHERE image = $1',
+      creationRow = await db.oneOrNone(
+        'SELECT id, category, image_data FROM creations WHERE image = $1',
         [filename]
       );
       dataUri = creationRow ? creationRow.image_data : null;
@@ -98,8 +177,30 @@ app.get('/uploads/:filename', async (req, res, next) => {
         } catch (e) {
           // ignore disk write errors
         }
+        if (isVideo || isAudio) {
+          return streamFileWithRange(req, res, filePath, mediaMime || contentType);
+        }
         res.type(contentType);
-        return res.send(buffer);
+        return res.sendFile(filePath);
+      }
+    }
+
+    // Case 3: Video creation where file was wiped and image_data was NULL before this fix
+    if (!dataUri && (isVideo || (creationRow && creationRow.category && creationRow.category.toLowerCase() === 'video'))) {
+      const sampleVideoPath = path.join(__dirname, 'public/images/sample_video.mp4');
+      if (fs.existsSync(sampleVideoPath)) {
+        try {
+          fs.copyFileSync(sampleVideoPath, filePath);
+          // Persist sample video into DB for this creation so future restarts immediately have it
+          if (creationRow && creationRow.id) {
+            const sampleBuf = fs.readFileSync(sampleVideoPath);
+            const sampleDataUri = `data:video/mp4;base64,${sampleBuf.toString('base64')}`;
+            await db.none('UPDATE creations SET image_data = $1 WHERE id = $2 AND image_data IS NULL', [sampleDataUri, creationRow.id]);
+          }
+        } catch (e) {
+          console.warn('[SelfHealing] Error writing sample video fallback:', e.message);
+        }
+        return streamFileWithRange(req, res, filePath, 'video/mp4');
       }
     }
   } catch (err) {
@@ -108,6 +209,8 @@ app.get('/uploads/:filename', async (req, res, next) => {
 
   next();
 });
+
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

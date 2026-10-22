@@ -506,6 +506,34 @@ function getMediaType(filename, category = "") {
   return "image";
 }
 
+function handleVideoError(videoEl, src, title) {
+  if (!videoEl || videoEl.dataset.errorHandled) return;
+  videoEl.dataset.errorHandled = "true";
+  const container = videoEl.closest(".post-media-container") || videoEl.closest(".details-media-container") || videoEl.parentElement;
+  if (!container) return;
+  container.innerHTML = `
+    <div class="video-error-fallback">
+      <div class="video-error-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <div>
+        <strong style="display:block; font-size:0.95rem; margin-bottom:4px;">${title ? esc(title) : "Video Player"}</strong>
+        <p>This video format or codec couldn't be played directly in this browser.</p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+        <a href="${src}" target="_blank" rel="noopener noreferrer" class="btn-video-fallback">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          Open Video
+        </a>
+        <a href="${src}" download class="btn-video-fallback" style="background:rgba(255,255,255,0.15);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Download
+        </a>
+      </div>
+    </div>
+  `;
+}
+
 function renderPostMedia(post) {
   const type = getMediaType(post.image, post.category);
   const src = fileUrl(post.image);
@@ -513,7 +541,12 @@ function renderPostMedia(post) {
   if (type === "video") {
     return `
       <div class="post-media-container video-container">
-        <video class="post-img post-video-player" src="${src}" controls playsinline preload="metadata"></video>
+        <video class="post-img post-video-player" controls playsinline preload="metadata" onerror="handleVideoError(this, '${src}', '${esc(post.title)}')">
+          <source src="${src}" type="video/mp4">
+          <source src="${src}" type="video/webm">
+          <source src="${src}" type="video/quicktime">
+          Your browser does not support HTML5 video.
+        </video>
         <span class="media-type-badge video-badge">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
           Video

@@ -52,13 +52,20 @@ const CreationController = {
       }
 
       let imageData = null;
-      if (!isVideo && !isAudio && req.file && req.file.size <= 15 * 1024 * 1024) {
+      if (req.file && req.file.size <= 50 * 1024 * 1024) {
         try {
           const buf = fs.readFileSync(req.file.path);
-          const mime = req.file.mimetype || 'image/jpeg';
+          let mime = req.file.mimetype;
+          if (isVideo && (!mime || mime === 'application/octet-stream')) {
+            mime = 'video/mp4';
+          } else if (isAudio && (!mime || mime === 'application/octet-stream')) {
+            mime = 'audio/mpeg';
+          } else if (!mime) {
+            mime = 'image/jpeg';
+          }
           imageData = `data:${mime};base64,${buf.toString('base64')}`;
         } catch (e) {
-          console.warn('[Creation] Error reading image for DB backup:', e.message);
+          console.warn('[Creation] Error reading media for DB backup:', e.message);
         }
       }
 
