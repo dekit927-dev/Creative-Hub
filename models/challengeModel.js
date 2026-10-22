@@ -5,12 +5,22 @@ const EmailService = require('../services/emailService');
 
 const ChallengeModel = {
   async list(currentUserId = null) {
-    const challenges = await db.any('SELECT * FROM challenges ORDER BY deadline ASC, id DESC');
+    const challenges = await db.any(`
+      SELECT c.*, u.full_name as user_full_name, u.username as user_username, u.profile_picture as user_profile_picture
+      FROM challenges c
+      LEFT JOIN users u ON u.id = c.user_id
+      ORDER BY c.deadline ASC, c.id DESC
+    `);
     return Promise.all(challenges.map(ch => ChallengeModel.formatChallenge(ch, currentUserId)));
   },
 
   async getById(id, currentUserId = null) {
-    const challenge = await db.oneOrNone('SELECT * FROM challenges WHERE id = $1', [id]);
+    const challenge = await db.oneOrNone(`
+      SELECT c.*, u.full_name as user_full_name, u.username as user_username, u.profile_picture as user_profile_picture
+      FROM challenges c
+      LEFT JOIN users u ON u.id = c.user_id
+      WHERE c.id = $1
+    `, [id]);
     if (!challenge) return null;
     return ChallengeModel.formatChallenge(challenge, currentUserId);
   },
@@ -27,6 +37,13 @@ const ChallengeModel = {
 
     return {
       id: ch.id,
+      user_id: ch.user_id,
+      user: ch.user_id ? {
+        id: ch.user_id,
+        full_name: ch.user_full_name || ch.organizer,
+        username: ch.user_username || '',
+        profile_picture: ch.user_profile_picture || null
+      } : null,
       title: ch.title,
       description: ch.description || '',
       short_summary: ch.short_summary || (ch.description ? ch.description.slice(0, 140) + '...' : 'Participate in this creative challenge to showcase your skills and collaborate with peers.'),
@@ -145,7 +162,11 @@ const ChallengeModel = {
     for (const key of allowed) {
       if (data[key] !== undefined) {
         fields.push(`${key} = $${idx++}`);
-        values.push(data[key]);
+        if (['deadline', 'start_date', 'event_date'].includes(key)) {
+          values.push(data[key] ? new Date(data[key]) : null);
+        } else {
+          values.push(data[key]);
+        }
       }
     }
 

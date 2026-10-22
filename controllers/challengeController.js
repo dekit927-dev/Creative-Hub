@@ -23,9 +23,15 @@ const ChallengeController = {
         return res.status(404).json({ detail: 'Challenge not found.' });
       }
 
-      // If user is admin or challenge organizer, include participants list
+      // If user is admin or challenge organizer or creator, include participants list
       let participants = [];
-      if (req.user && (req.user.role === 'admin' || challenge.organizer === req.user.full_name)) {
+      const isReviewer = req.user && (
+        req.user.role === 'admin' ||
+        challenge.organizer === req.user.full_name ||
+        (challenge.user_id && challenge.user_id === req.user.id) ||
+        (challenge.user && challenge.user.id === req.user.id)
+      );
+      if (isReviewer) {
         participants = await ChallengeModel.getParticipants(challengeId);
       }
 
@@ -110,6 +116,15 @@ const ChallengeController = {
         return res.status(404).json({ detail: 'Challenge not found.' });
       }
 
+      const isCreator = (existing.user_id && existing.user_id === req.user.id) ||
+                        (existing.user && existing.user.id === req.user.id) ||
+                        (existing.organizer && existing.organizer === req.user.full_name);
+      const isAdmin = req.user.role === 'admin';
+
+      if (!isCreator && !isAdmin) {
+        return res.status(403).json({ detail: 'You are not authorized to edit this challenge.' });
+      }
+
       const updated = await ChallengeModel.update(challengeId, req.body);
       res.json(updated);
     } catch (err) {
@@ -120,6 +135,20 @@ const ChallengeController = {
   async deleteChallenge(req, res, next) {
     try {
       const challengeId = parseInt(req.params.id, 10);
+      const existing = await ChallengeModel.getById(challengeId);
+      if (!existing) {
+        return res.status(404).json({ detail: 'Challenge not found.' });
+      }
+
+      const isCreator = (existing.user_id && existing.user_id === req.user.id) ||
+                        (existing.user && existing.user.id === req.user.id) ||
+                        (existing.organizer && existing.organizer === req.user.full_name);
+      const isAdmin = req.user.role === 'admin';
+
+      if (!isCreator && !isAdmin) {
+        return res.status(403).json({ detail: 'You are not authorized to delete this challenge.' });
+      }
+
       await ChallengeModel.delete(challengeId);
       res.json({ message: 'Challenge deleted successfully.' });
     } catch (err) {

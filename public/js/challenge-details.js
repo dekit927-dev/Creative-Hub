@@ -29,6 +29,8 @@ function renderDetails(ch) {
   document.getElementById("c-category").textContent = ch.category;
   document.getElementById("c-organizer").textContent = ch.organizer;
   document.getElementById("c-mode").textContent = ch.mode;
+  const modeTextEl = document.getElementById("c-mode-text");
+  if (modeTextEl) modeTextEl.textContent = ch.mode;
   document.getElementById("c-deadline").textContent = formatDate(ch.deadline);
   document.getElementById("c-location").textContent = ch.location;
   document.getElementById("c-team-size").textContent = ch.team_size;
@@ -45,6 +47,41 @@ function renderDetails(ch) {
   document.getElementById("c-prizes").textContent = ch.prizes;
   document.getElementById("c-resources").textContent = ch.resources;
   document.getElementById("c-contact-info").textContent = ch.contact_info;
+
+  // Check if current user is the creator or admin
+  const isCreatorOrAdmin = currentUser && (
+    currentUser.role === "admin" ||
+    (ch.user && ch.user.id === currentUser.id) ||
+    ch.user_id === currentUser.id ||
+    ch.organizer === currentUser.full_name
+  );
+
+  const topActionBox = document.getElementById("c-top-action");
+  const metaItems = document.querySelectorAll(".meta-item");
+
+  if (isCreatorOrAdmin) {
+    metaItems.forEach(el => {
+      if (el.dataset.field) {
+        el.classList.add("is-creator-editable");
+        el.title = `Click to edit ${el.dataset.field.replace("_", " ")}`;
+        el.onclick = () => openEditModal(el.dataset.field);
+      }
+    });
+
+    if (topActionBox) {
+      topActionBox.innerHTML = `
+        <button class="btn secondary small" onclick="openEditModal()" id="edit-challenge-btn" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">
+          ${svgIcon("edit", "sm")} <span>Edit Challenge Details</span>
+        </button>
+      `;
+    }
+  } else {
+    metaItems.forEach(el => {
+      el.classList.remove("is-creator-editable");
+      el.onclick = null;
+    });
+    if (topActionBox) topActionBox.innerHTML = "";
+  }
 
   renderApplicationCard(ch, ended);
   renderReviewerBox(ch);
@@ -215,6 +252,116 @@ async function withdrawApplication() {
   } catch (err) {
     toast(err.message || "Failed to withdraw application.");
   }
+}
+
+// Edit Challenge Details Modal functions
+function openEditModal(focusField = "") {
+  if (!challengeData) return;
+  hideMessage("edit-modal-error");
+
+  document.getElementById("edit-title").value = challengeData.title || "";
+  document.getElementById("edit-location").value = challengeData.location || "";
+
+  // Format deadline for <input type="date">
+  if (challengeData.deadline) {
+    const d = new Date(challengeData.deadline);
+    if (!isNaN(d.getTime())) {
+      document.getElementById("edit-deadline").value = d.toISOString().split("T")[0];
+    } else {
+      document.getElementById("edit-deadline").value = "";
+    }
+  } else {
+    document.getElementById("edit-deadline").value = "";
+  }
+
+  document.getElementById("edit-team-size").value = challengeData.team_size || "";
+  document.getElementById("edit-mode").value = challengeData.mode || "Hybrid";
+  document.getElementById("edit-category").value = challengeData.category || "";
+  document.getElementById("edit-organizer").value = challengeData.organizer || "";
+  document.getElementById("edit-description").value = challengeData.description || "";
+  document.getElementById("edit-deliverables").value = challengeData.deliverables || "";
+  document.getElementById("edit-submission-instructions").value = challengeData.submission_instructions || "";
+  document.getElementById("edit-eligibility").value = challengeData.eligibility || "";
+  document.getElementById("edit-evaluation-criteria").value = challengeData.evaluation_criteria || "";
+  document.getElementById("edit-prizes").value = challengeData.prizes || "";
+  document.getElementById("edit-contact-info").value = challengeData.contact_info || "";
+
+  document.getElementById("edit-modal").classList.remove("hidden");
+
+  if (focusField) {
+    const fieldMap = {
+      deadline: "edit-deadline",
+      location: "edit-location",
+      team_size: "edit-team-size",
+      mode: "edit-mode",
+      category: "edit-category",
+      description: "edit-description",
+      deliverables: "edit-deliverables"
+    };
+    const targetId = fieldMap[focusField] || `edit-${focusField}`;
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.focus();
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  } else {
+    document.getElementById("edit-title").focus();
+  }
+}
+
+function closeEditModal() {
+  const modal = document.getElementById("edit-modal");
+  if (modal) modal.classList.add("hidden");
+  hideMessage("edit-modal-error");
+}
+
+const closeEditX = document.getElementById("close-edit-modal-x");
+if (closeEditX) closeEditX.addEventListener("click", closeEditModal);
+
+const closeEditBtn = document.getElementById("close-edit-modal-btn");
+if (closeEditBtn) closeEditBtn.addEventListener("click", closeEditModal);
+
+const editForm = document.getElementById("edit-challenge-form");
+if (editForm) {
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideMessage("edit-modal-error");
+    const saveBtn = document.getElementById("save-challenge-btn");
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+
+    const body = {
+      title: document.getElementById("edit-title").value.trim(),
+      location: document.getElementById("edit-location").value.trim(),
+      deadline: document.getElementById("edit-deadline").value,
+      team_size: document.getElementById("edit-team-size").value.trim(),
+      mode: document.getElementById("edit-mode").value,
+      category: document.getElementById("edit-category").value.trim(),
+      organizer: document.getElementById("edit-organizer").value.trim(),
+      description: document.getElementById("edit-description").value.trim(),
+      deliverables: document.getElementById("edit-deliverables").value.trim(),
+      submission_instructions: document.getElementById("edit-submission-instructions").value.trim(),
+      eligibility: document.getElementById("edit-eligibility").value.trim(),
+      evaluation_criteria: document.getElementById("edit-evaluation-criteria").value.trim(),
+      prizes: document.getElementById("edit-prizes").value.trim(),
+      contact_info: document.getElementById("edit-contact-info").value.trim()
+    };
+
+    try {
+      await api(`/api/challenges/${challengeId}`, {
+        method: "PUT",
+        body
+      });
+      toast("Challenge details updated successfully.");
+      closeEditModal();
+      loadChallengeDetails();
+    } catch (err) {
+      showMessage("edit-modal-error", err.message || "Failed to update challenge details.");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Changes";
+    }
+  });
 }
 
 (async function init() {

@@ -79,6 +79,26 @@
     .meta-item:hover .meta-icon {
       transform: scale(1.25) rotate(-6deg);
     }
+    .meta-item.is-creator-editable {
+      cursor: pointer;
+    }
+    .meta-item.is-creator-editable:hover strong {
+      color: var(--blue-primary);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .meta-item.is-creator-editable .meta-edit-hint {
+      font-size: 0.72rem;
+      opacity: 0;
+      transition: all 0.2s ease;
+      margin-left: 2px;
+      transform: translateX(-3px);
+      display: inline-block;
+    }
+    .meta-item.is-creator-editable:hover .meta-edit-hint {
+      opacity: 0.85;
+      transform: translateX(0);
+    }
     .status-badge-lg {
       display: inline-block;
       font-size: 0.82rem;
@@ -152,27 +172,48 @@
               Organized by <strong id="c-organizer" style="color:var(--ink);">Organizer</strong>
             </p>
           </div>
-          <div id="c-top-status"></div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <div id="c-top-action"></div>
+            <div id="c-top-status"></div>
+          </div>
         </div>
 
         <div class="meta-row">
-          <div class="meta-item" title="Challenge Deadline">
+          <div class="meta-item" id="meta-item-deadline" data-field="deadline" title="Challenge Deadline">
             <span class="meta-icon">
               <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </span>
             <span>Deadline: <strong id="c-deadline">--</strong></span>
+            <span class="meta-edit-hint">
+              <svg class="svg-icon xs" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
           </div>
-          <div class="meta-item" title="Campus / Event Location">
+          <div class="meta-item" id="meta-item-location" data-field="location" title="Campus / Event Location">
             <span class="meta-icon">
               <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             </span>
             <span>Location: <strong id="c-location">--</strong></span>
+            <span class="meta-edit-hint">
+              <svg class="svg-icon xs" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
           </div>
-          <div class="meta-item" title="Participation Team Format">
+          <div class="meta-item" id="meta-item-team-size" data-field="team_size" title="Participation Team Format">
             <span class="meta-icon">
               <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </span>
             <span>Team: <strong id="c-team-size">--</strong></span>
+            <span class="meta-edit-hint">
+              <svg class="svg-icon xs" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
+          </div>
+          <div class="meta-item" id="meta-item-mode" data-field="mode" title="Event Mode">
+            <span class="meta-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </span>
+            <span>Mode: <strong id="c-mode-text">--</strong></span>
+            <span class="meta-edit-hint">
+              <svg class="svg-icon xs" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
           </div>
           <div class="meta-item" title="Total Confirmed Participants">
             <span class="meta-icon">
@@ -247,6 +288,121 @@
             <div id="applicants-list" class="stack" style="gap:12px;"></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Edit Challenge Details Modal (Creator / Admin only) -->
+    <div id="edit-modal" class="modal-overlay hidden">
+      <div class="modal-card" style="max-width:620px; max-height:90vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="margin:0; color:var(--heading); display:flex; align-items:center; gap:8px;">
+            <svg class="svg-icon md" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>Edit Challenge Details</span>
+          </h3>
+          <button type="button" class="btn xs secondary" id="close-edit-modal-x" style="border:none; padding:4px 8px; cursor:pointer;" title="Close">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <p class="muted" style="font-size:0.86rem; margin-bottom:14px;">
+          Change the challenge location, deadline, team format, judging rubric, prizes, and submission guidelines.
+        </p>
+        <div id="edit-modal-error" class="message error hidden"></div>
+        <form id="edit-challenge-form">
+          <div style="margin-bottom:12px;">
+            <label for="edit-title" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">Challenge Title</label>
+            <input type="text" id="edit-title" required placeholder="e.g. Photography & Design Contest">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label for="edit-location" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Location</span>
+              </label>
+              <input type="text" id="edit-location" placeholder="e.g. Kanglung Campus, Design Lab" required>
+            </div>
+            <div>
+              <label for="edit-deadline" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Submission Deadline</span>
+              </label>
+              <input type="date" id="edit-deadline" required>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label for="edit-team-size" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Team Format & Size</span>
+              </label>
+              <input type="text" id="edit-team-size" placeholder="e.g. 1 - 4 members, Individual" required>
+            </div>
+            <div>
+              <label for="edit-mode" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Mode</span>
+              </label>
+              <select id="edit-mode">
+                <option value="Hybrid">Hybrid</option>
+                <option value="In-Person">In-Person</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label for="edit-category" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                <span>Category</span>
+              </label>
+              <input type="text" id="edit-category" placeholder="e.g. Photography, Design">
+            </div>
+            <div>
+              <label for="edit-organizer" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Organizer Club / Society</span>
+              </label>
+              <input type="text" id="edit-organizer" placeholder="e.g. Sherubtse Creative Club">
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label for="edit-description" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">Overview & Objectives</label>
+            <textarea id="edit-description" rows="3" placeholder="What is this challenge about? What are the core themes?"></textarea>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label for="edit-deliverables" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">Deliverables</label>
+              <textarea id="edit-deliverables" rows="2" placeholder="e.g. High-res photo series, concept note..."></textarea>
+            </div>
+            <div>
+              <label for="edit-submission-instructions" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">Submission Guidelines</label>
+              <textarea id="edit-submission-instructions" rows="2" placeholder="e.g. Upload portfolio link or drive URL..."></textarea>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label for="edit-eligibility" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">Eligibility & Requirements</label>
+              <textarea id="edit-eligibility" rows="2" placeholder="e.g. Open to all Sherubtse students..."></textarea>
+            </div>
+            <div>
+              <label for="edit-evaluation-criteria" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">Judging Rubric & Criteria</label>
+              <textarea id="edit-evaluation-criteria" rows="2" placeholder="e.g. Originality (40%), Technical (30%), Theme (30%)..."></textarea>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+            <div>
+              <label for="edit-prizes" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">Prizes & Awards</label>
+              <input type="text" id="edit-prizes" placeholder="e.g. 1st: Nu. 5000, 2nd: Nu. 2500, Certificates">
+            </div>
+            <div>
+              <label for="edit-contact-info" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">Contact Email / Info</label>
+              <input type="text" id="edit-contact-info" placeholder="e.g. media.club@sherubtse.edu.bt">
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn secondary" id="close-edit-modal-btn">Cancel</button>
+            <button type="submit" class="btn" id="save-challenge-btn">Save Changes</button>
+          </div>
+        </form>
       </div>
     </div>
 

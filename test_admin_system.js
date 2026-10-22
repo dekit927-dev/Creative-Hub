@@ -522,6 +522,19 @@ async function runTests() {
            challengeDetailsRes.data.prizes,
       'Challenge details endpoint returns all rich fields, rubric, and organizer details');
 
+    // Creator / Organizer updates location, deadline, team size, and mode
+    const updateChallengeMetaRes = await request('PUT', `/api/challenges/${createdChallengeId}`, adminHeaders, {
+      location: 'Kanglung Media Studio & Design Lab',
+      team_size: 'Individual or Duos',
+      mode: 'Hybrid',
+      deadline: '2026-11-30'
+    });
+    assert(updateChallengeMetaRes.status === 200 &&
+           updateChallengeMetaRes.data.location === 'Kanglung Media Studio & Design Lab' &&
+           updateChallengeMetaRes.data.team_size === 'Individual or Duos' &&
+           updateChallengeMetaRes.data.mode === 'Hybrid',
+      'Creator/Organizer can successfully change challenge location, team size, and mode');
+
     // Student applies for challenge with cover note
     const applyChallengeRes = await request('POST', `/api/challenges/${createdChallengeId}/apply`, {
       'Authorization': `Bearer ${newStudentToken}`
