@@ -40,21 +40,64 @@
     .meta-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
-      margin: 14px 0 20px;
+      gap: 12px;
+      margin: 16px 0 20px;
     }
     .meta-item {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.9rem;
+      gap: 8px;
+      font-size: 0.92rem;
       color: var(--muted);
-      background: var(--blue-pale);
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
+      background: #f0f7ff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(37, 99, 235, 0.16);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      position: relative;
+    }
+    .meta-item .meta-icon {
+      font-size: 1.15rem;
+      line-height: 1;
+      display: inline-block;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .meta-item strong {
       color: var(--ink);
+      font-weight: 700;
+      transition: color 0.2s ease;
+    }
+    .meta-item:hover {
+      background: #ffffff;
+      border-color: var(--blue-primary);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 22px rgba(37, 99, 235, 0.18);
+      color: var(--blue-navy);
+    }
+    .meta-item:hover .meta-icon {
+      transform: scale(1.3) rotate(-6deg);
+    }
+    .meta-item.is-creator-editable {
+      cursor: pointer;
+    }
+    .meta-item.is-creator-editable:hover strong {
+      color: var(--blue-primary);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .meta-item.is-creator-editable .meta-edit-hint {
+      font-size: 0.72rem;
+      opacity: 0;
+      transition: all 0.2s ease;
+      margin-left: 2px;
+      transform: translateX(-3px);
+      display: inline-block;
+    }
+    .meta-item.is-creator-editable:hover .meta-edit-hint {
+      opacity: 0.85;
+      transform: translateX(0);
     }
     .status-badge-lg {
       display: inline-block;
@@ -133,14 +176,30 @@
               </a>
             </div>
           </div>
-          <div id="collab-top-action"></div>
+          <div id="collab-top-action" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;"></div>
         </div>
 
         <div class="meta-row">
-          <div class="meta-item"><span>&#128101;</span> <span>Positions: <strong id="collab-positions">--</strong></span></div>
-          <div class="meta-item"><span>&#9201;</span> <span>Duration: <strong id="collab-duration">--</strong></span></div>
-          <div class="meta-item"><span>&#128205;</span> <span>Location: <strong id="collab-location">--</strong></span></div>
-          <div class="meta-item"><span>&#127891;</span> <span>Experience: <strong id="collab-experience">--</strong></span></div>
+          <div class="meta-item" id="meta-item-positions" data-field="positions" title="Positions needed">
+            <span class="meta-icon">&#128101;</span>
+            <span>Positions: <strong id="collab-positions">--</strong></span>
+            <span class="meta-edit-hint">✏️</span>
+          </div>
+          <div class="meta-item" id="meta-item-duration" data-field="duration" title="Project duration">
+            <span class="meta-icon">&#9201;</span>
+            <span>Duration: <strong id="collab-duration">--</strong></span>
+            <span class="meta-edit-hint">✏️</span>
+          </div>
+          <div class="meta-item" id="meta-item-location" data-field="location" title="Campus / Project location">
+            <span class="meta-icon">&#128205;</span>
+            <span>Location: <strong id="collab-location">--</strong></span>
+            <span class="meta-edit-hint">✏️</span>
+          </div>
+          <div class="meta-item" id="meta-item-experience" data-field="experience" title="Required experience level">
+            <span class="meta-icon">&#127891;</span>
+            <span>Experience: <strong id="collab-experience">--</strong></span>
+            <span class="meta-edit-hint">✏️</span>
+          </div>
         </div>
       </div>
 
@@ -202,17 +261,109 @@
       </div>
     </div>
 
-    <!-- Application Modal -->
+    <!-- Edit Collaboration Details Modal (Creator / Admin) -->
+    <div id="edit-collab-modal" class="modal-overlay hidden">
+      <div class="modal-card" style="max-width:580px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="margin:0; color:var(--heading); font-size:1.3rem;">Edit Collaboration Details</h3>
+          <button type="button" class="btn xs secondary" id="close-edit-modal-x" style="border:none; font-size:1.1rem; padding:4px 8px; cursor:pointer;">✕</button>
+        </div>
+        <p class="muted" style="font-size:0.86rem; margin-bottom:16px;">
+          Update positions, duration, campus location, and experience requirements for this collaboration.
+        </p>
+        <div id="edit-modal-error" class="message error hidden"></div>
+        <form id="edit-collab-form">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label for="edit-positions" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">👥 Positions</label>
+              <input type="text" id="edit-positions" placeholder="e.g. 1-2 members" required>
+            </div>
+            <div>
+              <label for="edit-duration" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">⏱️ Duration</label>
+              <input type="text" id="edit-duration" placeholder="e.g. 2 - 4 weeks" required>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label for="edit-location" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">📍 Location</label>
+              <input type="text" id="edit-location" placeholder="e.g. Kanglung Campus" required>
+            </div>
+            <div>
+              <label for="edit-experience" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">🎓 Experience Level</label>
+              <input type="text" id="edit-experience" placeholder="e.g. Beginner to Intermediate" required>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label for="edit-mode" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">🌐 Project Mode</label>
+              <select id="edit-mode">
+                <option value="Hybrid">Hybrid</option>
+                <option value="In-Person">In-Person</option>
+                <option value="Remote">Remote</option>
+              </select>
+            </div>
+            <div>
+              <label for="edit-category" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">🏷️ Category</label>
+              <input type="text" id="edit-category" placeholder="e.g. Music & Sound, Design">
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label for="edit-roles" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">🎭 Roles & Skills</label>
+            <input type="text" id="edit-roles" placeholder="e.g. Dramyin Player, Vocalist, Audio Mixing">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label for="edit-deliverables" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">📦 Expected Deliverables</label>
+            <textarea id="edit-deliverables" rows="2" placeholder="e.g. Collaborative tracks, source stems, final showcase..."></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn secondary" id="close-edit-modal-btn">Cancel</button>
+            <button type="submit" class="btn" id="save-collab-btn">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Application Modal with File Attachment (Audio, Docs, Photos) -->
     <div id="apply-modal" class="modal-overlay hidden">
-      <div class="modal-card">
-        <h3 style="margin-top:0; color:var(--heading);">Request to Join Collaboration</h3>
-        <p class="muted" style="font-size:0.88rem; margin-bottom:16px;">
-          Introduce yourself, specify the role you are interested in, and share relevant portfolio samples.
+      <div class="modal-card" style="max-width:540px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="margin:0; color:var(--heading);">Request to Join Collaboration</h3>
+          <button type="button" class="btn xs secondary" id="close-modal-x" style="border:none; font-size:1.1rem; padding:4px 8px; cursor:pointer;">✕</button>
+        </div>
+        <p class="muted" style="font-size:0.88rem; margin-bottom:14px;">
+          Introduce yourself, specify your intended role, and upload sample files like audio demos, documents, or photos.
         </p>
         <div id="modal-error" class="message error hidden"></div>
         <form id="apply-form">
-          <label for="apply-message">Your Introduction & Relevant Experience</label>
-          <textarea id="apply-message" rows="5" placeholder="Which role would you like to take on? Mention your skills, tools you use, or links to your previous work..." style="margin-bottom:16px;"></textarea>
+          <label for="apply-message" style="font-weight:600; font-size:0.88rem; display:block; margin-bottom:4px;">
+            Your Introduction & Relevant Experience
+          </label>
+          <textarea id="apply-message" rows="4" placeholder="Which role would you like to take on? Mention your skills, instruments or tools you use..." style="margin-bottom:14px;"></textarea>
+          
+          <label style="font-weight:600; font-size:0.88rem; display:block; margin-bottom:6px;">
+            Upload Sample: Audio Demo, Document, or Photo <span class="muted" style="font-weight:400;">(Optional)</span>
+          </label>
+          <div id="file-dropzone" style="border:2px dashed var(--blue-border); border-radius:10px; padding:16px; text-align:center; background:#F8FAFC; cursor:pointer; transition:all 0.2s ease; margin-bottom:18px;">
+            <input type="file" id="apply-file" accept="image/*,audio/*,.pdf,.doc,.docx,.txt" style="display:none;">
+            <div id="dropzone-idle">
+              <div style="font-size:1.8rem; margin-bottom:4px;">📎</div>
+              <div style="font-weight:700; font-size:0.9rem; color:var(--ink);">Click to upload or drag & drop file</div>
+              <div class="muted" style="font-size:0.78rem; margin-top:4px;">
+                Audio (<span style="color:#047857; font-weight:600;">MP3, WAV, OGG</span>), Photos (<span style="color:#2563eb; font-weight:600;">JPG, PNG, WEBP</span>), Docs (<span style="color:#b45309; font-weight:600;">PDF, DOC, TXT</span>)
+              </div>
+            </div>
+            <div id="dropzone-selected" class="hidden" style="display:flex; align-items:center; justify-content:space-between; background:#FFFFFF; border:1px solid var(--blue-border); border-radius:8px; padding:10px 14px; text-align:left;">
+              <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                <span id="selected-file-icon" style="font-size:1.6rem;">📄</span>
+                <div style="overflow:hidden;">
+                  <div id="selected-file-name" style="font-weight:700; font-size:0.88rem; color:var(--ink); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">file.ext</div>
+                  <div id="selected-file-size" class="muted" style="font-size:0.78rem;">0 KB</div>
+                </div>
+              </div>
+              <button type="button" id="remove-file-btn" class="btn xs secondary" style="color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">✕ Remove</button>
+            </div>
+          </div>
+
           <div style="display:flex; justify-content:flex-end; gap:10px;">
             <button type="button" class="btn secondary" id="close-modal-btn">Cancel</button>
             <button type="submit" class="btn" id="confirm-apply-btn">Submit Request</button>

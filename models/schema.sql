@@ -237,6 +237,10 @@ CREATE TABLE IF NOT EXISTS collaboration_requests (
     reviewed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     reviewed_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    attachment_file VARCHAR(255) DEFAULT NULL,
+    attachment_name VARCHAR(255) DEFAULT NULL,
+    attachment_type VARCHAR(50) DEFAULT NULL,
+    attachment_data TEXT DEFAULT NULL,
     CONSTRAINT unique_user_collaboration UNIQUE (user_id, collaboration_id)
 );
 
@@ -246,6 +250,10 @@ ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS message TEXT DEFAULT
 ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS decision_message TEXT DEFAULT '';
 ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS reviewed_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
 ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS attachment_file VARCHAR(255) DEFAULT NULL;
+ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS attachment_name VARCHAR(255) DEFAULT NULL;
+ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS attachment_type VARCHAR(50) DEFAULT NULL;
+ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS attachment_data TEXT DEFAULT NULL;
 
 CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,

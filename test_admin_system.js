@@ -27,9 +27,14 @@ function request(method, path, headers = {}, body = null) {
 
     let payload = null;
     if (body) {
-      payload = JSON.stringify(body);
-      options.headers['Content-Type'] = 'application/json';
-      options.headers['Content-Length'] = Buffer.byteLength(payload);
+      if (Buffer.isBuffer(body)) {
+        payload = body;
+        options.headers['Content-Length'] = payload.length;
+      } else {
+        payload = JSON.stringify(body);
+        options.headers['Content-Type'] = 'application/json';
+        options.headers['Content-Length'] = Buffer.byteLength(payload);
+      }
     }
 
     const req = http.request(options, (res) => {
@@ -591,29 +596,72 @@ async function runTests() {
            collabDetailsRes.data.compensation,
       'Collaboration details endpoint returns all rich role, tool, and compensation specifications');
 
-    // New student requests to join
-    const applyCollabRes = await request('POST', `/api/collaborations/${createdCollabId}/apply`, {
-      'Authorization': `Bearer ${newStudentToken}`
+    // Project creator updates positions, duration, location, and experience
+    const updateCollabMetaRes = await request('PUT', `/api/collaborations/${createdCollabId}`, {
+      'Authorization': `Bearer ${studentToken}` // Sonam (project creator)
     }, {
-      message: 'I am a 2nd year CS student skilled in vector SVG illustration and web design.'
+      positions: '3 - 4 core musicians',
+      duration: '6 - 8 weeks',
+      location: 'Kanglung Campus Music Room',
+      experience: 'Intermediate to Advanced'
     });
-    assert(applyCollabRes.status === 200 && applyCollabRes.data.collaboration.my_request.status === 'Pending',
-      'Student can submit join request for collaboration project (Status: Pending)');
+    assert(updateCollabMetaRes.status === 200 &&
+           updateCollabMetaRes.data.positions === '3 - 4 core musicians' &&
+           updateCollabMetaRes.data.duration === '6 - 8 weeks' &&
+           updateCollabMetaRes.data.location === 'Kanglung Campus Music Room' &&
+           updateCollabMetaRes.data.experience === 'Intermediate to Advanced',
+      'Creator can successfully change positions, duration, location, and experience');
 
-    // Project lead reviews requester list
+    // New student requests to join with an uploaded audio demo attachment (multipart/form-data)
+    const boundary = '----WebKitFormBoundary' + Math.random().toString(16).substring(2);
+    const audioDummyContent = 'ID3\x03\x00\x00\x00\x00\x00#TSSE\x00\x00\x00\x0f\x00\x00\x01Lavf58.29.100\x00';
+    const multipartBody = Buffer.concat([
+      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="message"\r\n\r\nI have attached my acoustic folk audio demo for the collaboration.\r\n`),
+      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="attachment"; filename="acoustic_folk_demo.mp3"\r\nContent-Type: audio/mpeg\r\n\r\n`),
+      Buffer.from(audioDummyContent),
+      Buffer.from(`\r\n--${boundary}--\r\n`)
+    ]);
+
+    const applyCollabRes = await request('POST', `/api/collaborations/${createdCollabId}/apply`, {
+      'Authorization': `Bearer ${newStudentToken}`,
+      'Content-Type': `multipart/form-data; boundary=${boundary}`
+    }, multipartBody);
+    assert(applyCollabRes.status === 200 &&
+           applyCollabRes.data.collaboration.my_request.status === 'Pending' &&
+           applyCollabRes.data.collaboration.my_request.attachment_file &&
+           applyCollabRes.data.collaboration.my_request.attachment_name === 'acoustic_folk_demo.mp3' &&
+           applyCollabRes.data.collaboration.my_request.attachment_type === 'audio',
+      'Student can submit join request with audio demo file attachment');
+
+    // Project lead reviews requester list with attachment preview details
     const leadCollabReviewRes = await request('GET', `/api/collaborations/${createdCollabId}`, {
       'Authorization': `Bearer ${studentToken}` // Sonam (project lead)
     });
-    assert(leadCollabReviewRes.status === 200 && leadCollabReviewRes.data.requesters_list.length > 0,
-      'Project lead can view applicants with requested roles and cover messages');
+    assert(leadCollabReviewRes.status === 200 &&
+           leadCollabReviewRes.data.requesters_list.length > 0 &&
+           leadCollabReviewRes.data.requesters_list[0].attachment_file &&
+           leadCollabReviewRes.data.requesters_list[0].attachment_type === 'audio' &&
+           leadCollabReviewRes.data.requesters_list[0].attachment_url,
+      'Project lead can view applicants with attached audio demo and playback URL');
     const collabRequestId = leadCollabReviewRes.data.requesters_list[0].request_id;
+    const attFilename = leadCollabReviewRes.data.requesters_list[0].attachment_file;
+
+    // Test self-healing restoration for collaboration file attachments if wiped from ephemeral container disk
+    const attDiskPath = path.join(__dirname, 'public/uploads', attFilename);
+    if (fs.existsSync(attDiskPath)) {
+      fs.unlinkSync(attDiskPath);
+    }
+    assert(!fs.existsSync(attDiskPath), 'Collaboration attachment file successfully wiped from disk');
+    const attFetchRes = await request('GET', `/uploads/${attFilename}`);
+    assert(attFetchRes.status === 200, 'Self-healing /uploads route restores collaboration attachment after container restart');
+    assert(fs.existsSync(attDiskPath), 'Restored attachment file re-created on disk for seamless audio/doc preview');
 
     // Project lead transitions status to "Under Review"
     const updateCollabReqRes = await request('PATCH', `/api/collaborations/${createdCollabId}/requests/${collabRequestId}/status`, {
       'Authorization': `Bearer ${studentToken}`
     }, {
       status: 'Under Review',
-      decision_message: 'Your illustration portfolio looks great, let us schedule a sync this Thursday.'
+      decision_message: 'Your illustration portfolio and audio demo look great, let us schedule a sync this Thursday.'
     });
     assert(updateCollabReqRes.status === 200 && updateCollabReqRes.data.request.status === 'Under Review',
       'Project lead can transition applicant status to Under Review with collaborative feedback note');

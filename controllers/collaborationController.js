@@ -148,7 +148,11 @@ const CollaborationController = {
       }
 
       const { message } = req.body;
-      const updated = await CollaborationModel.apply(collabId, req.user.id, { message: message || '' });
+      const file = req.file;
+      const updated = await CollaborationModel.apply(collabId, req.user.id, {
+        message: message || '',
+        file: file || null
+      });
       res.json({ message: 'Request submitted! Your application is now Pending Review.', collaboration: updated });
     } catch (err) {
       next(err);

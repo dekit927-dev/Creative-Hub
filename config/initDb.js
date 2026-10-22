@@ -50,6 +50,35 @@ async function syncUploadsToDb() {
         }
       }
     }
+    // Sync collaboration request attachments
+    const requestsWithoutData = await db.any(
+      'SELECT id, attachment_file FROM collaboration_requests WHERE attachment_file IS NOT NULL AND attachment_data IS NULL'
+    );
+    for (const r of requestsWithoutData) {
+      const filename = path.basename(r.attachment_file);
+      const filePath = path.join(uploadDir, filename);
+      if (fs.existsSync(filePath)) {
+        try {
+          const buf = fs.readFileSync(filePath);
+          if (buf.length <= 25 * 1024 * 1024) {
+            const ext = path.extname(filename).toLowerCase();
+            let mime = 'application/octet-stream';
+            if (['.jpg', '.jpeg'].includes(ext)) mime = 'image/jpeg';
+            else if (ext === '.png') mime = 'image/png';
+            else if (ext === '.webp') mime = 'image/webp';
+            else if (ext === '.mp3') mime = 'audio/mpeg';
+            else if (ext === '.wav') mime = 'audio/wav';
+            else if (ext === '.ogg') mime = 'audio/ogg';
+            else if (ext === '.pdf') mime = 'application/pdf';
+            else if (ext === '.txt') mime = 'text/plain';
+            const dataUri = `data:${mime};base64,${buf.toString('base64')}`;
+            await db.none('UPDATE collaboration_requests SET attachment_data = $1 WHERE id = $2', [dataUri, r.id]);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
   } catch (err) {
     console.warn('[Backup] Sync error:', err.message);
   }
@@ -77,6 +106,12 @@ async function ensureMigrations() {
       ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS compensation VARCHAR(100) DEFAULT 'Volunteer';
       ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS application_instructions TEXT DEFAULT '';
       ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'Open';
+
+      -- Collaboration requests attachment migrations
+      ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS attachment_file VARCHAR(255) DEFAULT NULL;
+      ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS attachment_name VARCHAR(255) DEFAULT NULL;
+      ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS attachment_type VARCHAR(50) DEFAULT NULL;
+      ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS attachment_data TEXT DEFAULT NULL;
 
       -- Users table migrations
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notifications_enabled BOOLEAN DEFAULT TRUE;

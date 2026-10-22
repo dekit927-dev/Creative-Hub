@@ -79,6 +79,15 @@ app.get('/uploads/:filename', async (req, res, next) => {
       dataUri = creationRow ? creationRow.image_data : null;
     }
 
+    // 3. Try finding in collaboration_requests attachment
+    if (!dataUri) {
+      const reqRow = await db.oneOrNone(
+        'SELECT attachment_data FROM collaboration_requests WHERE attachment_file = $1',
+        [filename]
+      );
+      dataUri = reqRow ? reqRow.attachment_data : null;
+    }
+
     if (dataUri && dataUri.startsWith('data:')) {
       const matches = dataUri.match(/^data:([^;]+);base64,(.+)$/);
       if (matches) {

@@ -26,17 +26,20 @@ const fileFilter = (req, file, cb) => {
     // Videos
     '.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi',
     // Audio
-    '.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'
+    '.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac',
+    // Documents
+    '.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.zip'
   ];
   const ext = path.extname(file.originalname).toLowerCase();
   const isImage = file.mimetype.startsWith('image/') || ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext);
   const isVideo = file.mimetype.startsWith('video/') || ['.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi'].includes(ext);
   const isAudio = file.mimetype.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'].includes(ext);
+  const isDoc = file.mimetype.startsWith('application/') || file.mimetype.startsWith('text/') || ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.zip'].includes(ext);
 
-  if (allowedExtensions.includes(ext) && (isImage || isVideo || isAudio)) {
+  if (allowedExtensions.includes(ext) && (isImage || isVideo || isAudio || isDoc)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Please upload a photo (JPG, PNG, GIF, WEBP), video (MP4, WebM, MOV), or audio (MP3, WAV, OGG) file.'), false);
+    cb(new Error('Invalid file type. Please upload a photo (JPG, PNG, GIF, WEBP), audio (MP3, WAV, OGG), document (PDF, DOC, DOCX, TXT), or video file.'), false);
   }
 };
 

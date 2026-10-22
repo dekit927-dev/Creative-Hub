@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { db } = require('../config/db');
 const UserModel = require('./userModel');
 const NotificationModel = require('./notificationModel');
@@ -30,6 +32,7 @@ const CollaborationModel = {
   async formatCollaboration(row, currentUserId = null) {
     const requests = await db.any(`
       SELECT cr.id as request_id, cr.user_id, cr.status, cr.message, cr.decision_message, cr.created_at, cr.reviewed_at,
+             cr.attachment_file, cr.attachment_name, cr.attachment_type,
              u.full_name, u.username, u.profile_picture, u.email
       FROM collaboration_requests cr
       JOIN users u ON u.id = cr.user_id
@@ -47,6 +50,10 @@ const CollaborationModel = {
           status: r.status,
           message: r.message,
           decision_message: r.decision_message,
+          attachment_file: r.attachment_file || null,
+          attachment_name: r.attachment_name || null,
+          attachment_type: r.attachment_type || null,
+          attachment_url: r.attachment_file ? UserModel.fileUrl(r.attachment_file) : null,
           created_at: r.created_at ? r.created_at.toISOString() : null,
           reviewed_at: r.reviewed_at ? r.reviewed_at.toISOString() : null,
           user: UserModel.formatSmallUser(r)
@@ -88,6 +95,10 @@ const CollaborationModel = {
         status: myRequest.status,
         message: myRequest.message || '',
         decision_message: myRequest.decision_message || '',
+        attachment_file: myRequest.attachment_file || null,
+        attachment_name: myRequest.attachment_name || null,
+        attachment_type: myRequest.attachment_type || null,
+        attachment_url: myRequest.attachment_file ? UserModel.fileUrl(myRequest.attachment_file) : null,
         created_at: myRequest.created_at ? myRequest.created_at.toISOString() : null,
         reviewed_at: myRequest.reviewed_at ? myRequest.reviewed_at.toISOString() : null
       } : null,
@@ -189,7 +200,7 @@ const CollaborationModel = {
   },
 
   // Submit request / application
-  async apply(collaborationId, userId, { message = '' } = {}) {
+  async apply(collaborationId, userId, { message = '', file = null } = {}) {
     const collab = await db.oneOrNone('SELECT * FROM collaborations WHERE id = $1', [collaborationId]);
     if (!collab) {
       const err = new Error('Collaboration opportunity not found.');
@@ -203,6 +214,35 @@ const CollaborationModel = {
       throw err;
     }
 
+    let attachmentFile = null;
+    let attachmentName = null;
+    let attachmentType = null;
+    let attachmentData = null;
+
+    if (file) {
+      attachmentFile = file.filename;
+      attachmentName = file.originalname;
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (file.mimetype.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'].includes(ext)) {
+        attachmentType = 'audio';
+      } else if (file.mimetype.startsWith('image/') || ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext)) {
+        attachmentType = 'photo';
+      } else {
+        attachmentType = 'document';
+      }
+
+      if (file.path && fs.existsSync(file.path)) {
+        try {
+          const buf = fs.readFileSync(file.path);
+          if (buf.length <= 25 * 1024 * 1024) {
+            attachmentData = `data:${file.mimetype || 'application/octet-stream'};base64,${buf.toString('base64')}`;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+
     const existing = await db.oneOrNone(
       'SELECT * FROM collaboration_requests WHERE collaboration_id = $1 AND user_id = $2',
       [collaborationId, userId]
@@ -214,17 +254,28 @@ const CollaborationModel = {
         err.status = 400;
         throw err;
       }
-      await db.none(
-        `UPDATE collaboration_requests
-         SET status = 'Pending', message = $1, decision_message = NULL, reviewed_by = NULL, reviewed_at = NULL, created_at = CURRENT_TIMESTAMP
-         WHERE id = $2`,
-        [message ? message.trim() : '', existing.id]
-      );
+      if (file) {
+        await db.none(
+          `UPDATE collaboration_requests
+           SET status = 'Pending', message = $1, decision_message = NULL, reviewed_by = NULL, reviewed_at = NULL,
+               attachment_file = $2, attachment_name = $3, attachment_type = $4, attachment_data = $5,
+               created_at = CURRENT_TIMESTAMP
+           WHERE id = $6`,
+          [message ? message.trim() : '', attachmentFile, attachmentName, attachmentType, attachmentData, existing.id]
+        );
+      } else {
+        await db.none(
+          `UPDATE collaboration_requests
+           SET status = 'Pending', message = $1, decision_message = NULL, reviewed_by = NULL, reviewed_at = NULL, created_at = CURRENT_TIMESTAMP
+           WHERE id = $2`,
+          [message ? message.trim() : '', existing.id]
+        );
+      }
     } else {
       await db.none(
-        `INSERT INTO collaboration_requests (collaboration_id, user_id, status, message)
-         VALUES ($1, $2, 'Pending', $3)`,
-        [collaborationId, userId, message ? message.trim() : '']
+        `INSERT INTO collaboration_requests (collaboration_id, user_id, status, message, attachment_file, attachment_name, attachment_type, attachment_data)
+         VALUES ($1, $2, 'Pending', $3, $4, $5, $6, $7)`,
+        [collaborationId, userId, message ? message.trim() : '', attachmentFile, attachmentName, attachmentType, attachmentData]
       );
     }
 
@@ -355,6 +406,7 @@ const CollaborationModel = {
   async getRequesters(collaborationId) {
     const rows = await db.any(`
       SELECT cr.id as request_id, cr.status, cr.message, cr.decision_message, cr.reviewed_at, cr.created_at,
+             cr.attachment_file, cr.attachment_name, cr.attachment_type,
              u.id, u.full_name, u.username, u.email, u.profile_picture
       FROM collaboration_requests cr
       JOIN users u ON u.id = cr.user_id
@@ -367,6 +419,10 @@ const CollaborationModel = {
       status: r.status,
       message: r.message,
       decision_message: r.decision_message,
+      attachment_file: r.attachment_file || null,
+      attachment_name: r.attachment_name || null,
+      attachment_type: r.attachment_type || null,
+      attachment_url: r.attachment_file ? UserModel.fileUrl(r.attachment_file) : null,
       created_at: r.created_at ? r.created_at.toISOString() : null,
       reviewed_at: r.reviewed_at ? r.reviewed_at.toISOString() : null,
       user: UserModel.formatSmallUser(r)
@@ -377,6 +433,7 @@ const CollaborationModel = {
   async getUserRequests(userId) {
     const rows = await db.any(`
       SELECT cr.id as request_id, cr.status, cr.message, cr.decision_message, cr.reviewed_at, cr.created_at as applied_at,
+             cr.attachment_file, cr.attachment_name, cr.attachment_type,
              c.id as collaboration_id, c.title, c.category, c.roles, c.mode, c.duration, c.status as collaboration_status, c.short_summary,
              u.full_name as lead_name
       FROM collaboration_requests cr
@@ -400,6 +457,10 @@ const CollaborationModel = {
       status: r.status,
       message: r.message || '',
       decision_message: r.decision_message || '',
+      attachment_file: r.attachment_file || null,
+      attachment_name: r.attachment_name || null,
+      attachment_type: r.attachment_type || null,
+      attachment_url: r.attachment_file ? UserModel.fileUrl(r.attachment_file) : null,
       applied_at: r.applied_at ? r.applied_at.toISOString() : null,
       reviewed_at: r.reviewed_at ? r.reviewed_at.toISOString() : null,
       details_url: `collaboration-details.html?id=${r.collaboration_id}`

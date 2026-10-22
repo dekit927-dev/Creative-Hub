@@ -118,6 +118,13 @@ function renderList() {
         </div>
 
         ${app.message ? `<div style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;"><strong>Your Note:</strong> ${esc(app.message)}</div>` : ""}
+        ${app.attachment_file ? `
+          <div style="margin:8px 0; font-size:0.82rem;">
+            <a href="${fileUrl(app.attachment_file)}" target="_blank" download class="row" style="display:inline-flex; align-items:center; gap:6px; background:var(--blue-pale); padding:4px 10px; border-radius:6px; color:var(--blue-navy); font-weight:600; text-decoration:none;">
+              <span>📎</span> <span>Attached Sample: ${esc(app.attachment_name || 'Download Attachment')}</span>
+            </a>
+          </div>
+        ` : ""}
         ${feedbackHtml}
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--line);">
