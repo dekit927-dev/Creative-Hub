@@ -68,14 +68,25 @@ const AuthController = {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      await UserModel.create({
+      const user = await UserModel.create({
         fullName: full_name.trim(),
         username: username.trim(),
         email: email.trim(),
         hashedPassword
       });
 
-      res.json({ message: 'Account created. You can log in now.' });
+      const token = crypto.randomBytes(32).toString('hex');
+      await UserModel.createSession(user.id, token);
+
+      if (req.session) {
+        req.session.user = { id: user.id, username: user.username, email: user.email, full_name: user.full_name };
+      }
+
+      res.json({
+        message: 'Account created. You can log in now.',
+        token,
+        user: UserModel.formatSmallUser(user)
+      });
     } catch (err) {
       next(err);
     }

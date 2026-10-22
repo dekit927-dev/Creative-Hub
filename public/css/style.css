@@ -445,17 +445,39 @@ img {
   position: absolute;
   right: 0;
   top: 48px;
-  width: 340px;
-  max-height: 440px;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  max-height: 480px;
   overflow-y: auto;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
   background: #0B1E38;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
   text-align: left;
-  z-index: 100;
+  z-index: 1000;
   animation: fadeInDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   color: #FFFFFF;
+  overscroll-behavior: contain;
+}
+
+.dropdown::-webkit-scrollbar {
+  width: 5px;
+  height: 0px !important;
+}
+
+.dropdown::-webkit-scrollbar-track {
+  background: rgba(11, 30, 56, 0.5);
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+
+.dropdown::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 @keyframes fadeInDown {
@@ -467,21 +489,42 @@ img {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   padding: 12px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   font-weight: 700;
   color: #E5A855;
   background: #07152B;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden;
+}
+
+.dropdown-head .btn,
+.dropdown-head #read-all-btn {
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .notif {
   display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
   padding: 12px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   color: rgba(248, 250, 252, 0.9);
   font-size: 0.92rem;
+  line-height: 1.45;
   cursor: pointer;
   transition: var(--transition-fast);
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  overflow: hidden;
 }
 
 .notif:hover {
@@ -501,8 +544,10 @@ img {
   display: block;
   color: rgba(248, 250, 252, 0.6);
   font-weight: 400;
-  margin-top: 3px;
+  margin-top: 4px;
   font-size: 0.78rem;
+  word-break: break-word;
+  white-space: normal;
 }
 
 /* ================= RESPONSIVE NAVIGATION SYSTEM (MOBILE, TABLET, LAPTOP, DESKTOP) ================= */
@@ -2881,11 +2926,17 @@ label {
   }
 
   .dropdown {
-    position: fixed;
-    left: 10px;
-    right: 10px;
-    width: auto;
-    top: 62px;
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: calc(100vw - 24px) !important;
+    top: 58px !important;
+    max-height: calc(100vh - 140px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6) !important;
   }
 
   .profile-stats-grid {

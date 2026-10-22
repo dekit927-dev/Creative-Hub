@@ -9,10 +9,19 @@ const pgp = require('pg-promise')({
 });
 require('dotenv').config();
 
-const isSsl = process.env.DB_SSL === 'true' || process.env.DB_SSL === '1';
+const isNeon = Boolean(
+  (process.env.DB_HOST && process.env.DB_HOST.includes('neon.tech')) ||
+  (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('neon.tech'))
+);
+
+const isSsl = process.env.DB_SSL === 'true' ||
+  process.env.DB_SSL === '1' ||
+  isNeon ||
+  Boolean(process.env.RENDER) ||
+  (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')) ||
+  (process.env.DB_HOST && !['localhost', '127.0.0.1'].includes(process.env.DB_HOST));
 
 // Neon databases are named 'neondb' by default. If connecting to Neon and DB_NAME is missing or still set to the local default, use 'neondb'.
-const isNeon = Boolean(process.env.DB_HOST && process.env.DB_HOST.includes('neon.tech'));
 const requestedDbName = process.env.DB_NAME;
 const resolvedDbName = (isNeon && (!requestedDbName || requestedDbName === 'creative_hub_db'))
   ? 'neondb'

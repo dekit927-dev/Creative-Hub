@@ -82,6 +82,18 @@ async function runTests() {
     const unauthRes = await request('GET', '/api/admin/dashboard/overview');
     assert(unauthRes.status === 401, 'Unauthenticated access to /api/admin/dashboard/overview returns 401 Unauthorized');
 
+    // 2.1b Student registration returns token and user
+    const regTimestamp = Date.now();
+    const studentRegister = await request('POST', '/api/register', {}, {
+      full_name: 'Pema Wangmo',
+      username: `pwangmo_${regTimestamp % 100000}`,
+      email: `pwangmo_${regTimestamp % 100000}@sherubtse.edu.bt`,
+      password: 'password123',
+      confirm_password: 'password123'
+    });
+    assert(studentRegister.status === 200 && studentRegister.data.token && studentRegister.data.user,
+      'Student registration succeeds and immediately returns session token for seamless login');
+
     // 2.2 Student login (role = user)
     const studentLogin = await request('POST', '/api/login', {}, {
       email: 'sonam@sherubtse.edu.bt',

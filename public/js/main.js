@@ -72,7 +72,11 @@ function showMessage(elementId, text, type = "error") {
   const box = document.getElementById(elementId);
   if (!box) return;
   box.className = "message " + type;
-  box.textContent = text;
+  if (typeof text === "string" && text.includes("<") && text.includes(">")) {
+    box.innerHTML = text;
+  } else {
+    box.textContent = text;
+  }
   box.classList.remove("hidden");
 }
 
@@ -90,7 +94,7 @@ function toast(text) {
 }
 
 // ---------- talking to the backend ----------
-async function api(path, options = {}) {
+async function api(path, options = {}, retries = 2) {
   const headers = options.headers || {};
   const token = localStorage.getItem("token");
   if (token) headers["Authorization"] = "Bearer " + token;
@@ -98,16 +102,36 @@ async function api(path, options = {}) {
     headers["Content-Type"] = "application/json";
     options.body = JSON.stringify(options.body);
   }
+
   let response;
-  try {
-    response = await fetch(API + path, { ...options, headers });
-  } catch (error) {
-    throw new Error("Cannot reach the server. Make sure the backend is running.");
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      response = await fetch(API + path, { ...options, headers });
+      lastError = null;
+      // If we got a 502/503/504 Bad Gateway from Render/Cloudflare during cold start, wait and retry
+      if ((response.status === 502 || response.status === 503 || response.status === 504) && attempt < retries) {
+        await new Promise(r => setTimeout(r, 1800 * (attempt + 1)));
+        continue;
+      }
+      break;
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 1800 * (attempt + 1)));
+      }
+    }
   }
+
+  if (lastError || !response) {
+    throw new Error("Unable to reach the server. The backend may be waking up or your internet connection was interrupted. Please try again.");
+  }
+
   let data = null;
   try { data = await response.json(); } catch (error) { /* no JSON body */ }
 
-  const onAuthPage = /login\.html|register\.html/.test(window.location.pathname);
+  const onAuthPage = /login|register/.test(window.location.pathname);
   if (response.status === 401 && !onAuthPage) {
     // Token missing or expired: go back to login
     localStorage.removeItem("token");
@@ -115,6 +139,9 @@ async function api(path, options = {}) {
     throw new Error("Please log in.");
   }
   if (!response.ok) {
+    if (response.status === 502 || response.status === 503 || response.status === 504) {
+      throw new Error("The platform server is waking up on Render. Please wait a few seconds and try again.");
+    }
     throw new Error(data && data.detail ? data.detail : "Something went wrong. Please try again.");
   }
   return data;
