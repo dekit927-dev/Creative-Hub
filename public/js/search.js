@@ -37,7 +37,7 @@
           <div class="muted">@${esc(u.username)}</div>
           <p>${esc(u.bio) || '<span class="muted" style="font-style:italic">Creative community member</span>'}</p>
           <div class="row" style="justify-content:center; gap:8px; margin-top:auto;">
-            <a class="btn small secondary" href="messages.html?user=${u.id}">&#9993; Message</a>
+            <a class="btn small secondary" href="messages.html?user=${u.id}" style="display:inline-flex; align-items:center; gap:4px;">${svgIcon("mail", "xs")} <span>Message</span></a>
             <a class="btn small secondary" href="profile.html?id=${u.id}">View profile</a>
           </div>
         </div>`).join("") + `</div>`;

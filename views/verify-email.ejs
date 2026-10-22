@@ -20,14 +20,18 @@
       </div>
 
       <div id="verify-state-success" class="hidden">
-        <div style="width:60px; height:60px; border-radius:50%; background:#ECFDF5; color:#10B981; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:32px;">&#10003;</div>
+        <div style="width:60px; height:60px; border-radius:50%; background:#ECFDF5; color:#10B981; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+          <svg class="svg-icon xl" viewBox="0 0 24 24" style="stroke:#10B981;"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
         <h2 style="color:#065F46;">Email Verified!</h2>
         <p class="muted" id="success-desc" style="margin-bottom:24px;">Your account has been successfully verified. You can now log in and explore the creative community.</p>
         <a class="btn full" href="login.html">Proceed to Log in</a>
       </div>
 
       <div id="verify-state-error" class="hidden">
-        <div style="width:60px; height:60px; border-radius:50%; background:#FEF2F2; color:#EF4444; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:28px;">!</div>
+        <div style="width:60px; height:60px; border-radius:50%; background:#FEF2F2; color:#EF4444; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+          <svg class="svg-icon xl" viewBox="0 0 24 24" style="stroke:#EF4444;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
         <h2 style="color:#991B1B;">Verification Failed</h2>
         <div id="error-message" class="message error" style="margin-bottom:20px;"></div>
         
@@ -45,7 +49,9 @@
       </div>
 
       <div id="verify-state-no-token" class="hidden">
-        <div style="width:60px; height:60px; border-radius:50%; background:#EFF6FF; color:#2563EB; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:28px;">&#9993;</div>
+        <div style="width:60px; height:60px; border-radius:50%; background:#EFF6FF; color:#2563EB; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+          <svg class="svg-icon xl" viewBox="0 0 24 24" style="stroke:#2563EB;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
         <h2>Verify Your Email</h2>
         <p class="muted" style="margin-bottom:20px;">Please check your inbox for the verification email sent during registration and click the link inside.</p>
         
@@ -111,7 +117,7 @@
             result.className = "message info";
             let html = `<div>${res.message || "Verification email sent. Please check your inbox."}</div>`;
             if (res.verificationToken) {
-              html += `<div style="margin-top:10px;"><a href="verify-email.html?token=${encodeURIComponent(res.verificationToken)}" class="btn small full" style="text-align:center; display:block; background:#10B981; border-color:#10B981; color:#fff; text-decoration:none;">&#10003; Click to Verify Account Now</a></div>`;
+              html += `<div style="margin-top:10px;"><a href="verify-email.html?token=${encodeURIComponent(res.verificationToken)}" class="btn small full" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; background:#10B981; border-color:#10B981; color:#fff; text-decoration:none;">${svgIcon("check", "sm")} <span>Click to Verify Account Now</span></a></div>`;
             }
             result.innerHTML = html;
             result.classList.remove("hidden");

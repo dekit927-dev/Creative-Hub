@@ -22,8 +22,8 @@ async function loadProfile() {
           </div>
           <div class="profile-badges-row">
             ${isMe
-              ? `<span class="profile-badge-pill mine">&#10022; Your Profile</span>`
-              : `<span class="profile-badge-pill creator">&#9679; Creative Member</span>`}
+              ? `<span class="profile-badge-pill mine" style="display:inline-flex; align-items:center; gap:4px;">${svgIcon("star", "xs")} <span>Your Profile</span></span>`
+              : `<span class="profile-badge-pill creator" style="display:inline-flex; align-items:center; gap:4px;">${svgIcon("user", "xs")} <span>Creative Member</span></span>`}
           </div>
         </div>
 
@@ -52,13 +52,13 @@ async function loadProfile() {
 
           <div class="profile-actions">
             ${isMe ? `
-              <button class="btn" id="edit-btn">&#9998; Edit profile</button>
+              <button class="btn" id="edit-btn" style="display:inline-flex; align-items:center; gap:6px;">${svgIcon("edit", "sm")} <span>Edit profile</span></button>
               <a class="btn secondary" href="create.html">+ Share new work</a>
             ` : `
-              <button class="btn ${u.is_following ? "secondary" : ""}" id="follow-btn">
-                ${u.is_following ? "&#10003; Following" : "+ Follow"}
+              <button class="btn ${u.is_following ? "secondary" : ""}" id="follow-btn" style="display:inline-flex; align-items:center; gap:6px;">
+                ${u.is_following ? `${svgIcon("check", "xs")} <span>Following</span>` : "+ Follow"}
               </button>
-              <a class="btn secondary" href="messages.html?user=${u.id}">&#9993; Message</a>
+              <a class="btn secondary" href="messages.html?user=${u.id}" style="display:inline-flex; align-items:center; gap:6px;">${svgIcon("mail", "xs")} <span>Message</span></a>
             `}
           </div>
         </div>
@@ -78,7 +78,7 @@ async function loadProfile() {
     document.getElementById("follow-btn").addEventListener("click", async (event) => {
       try {
         const result = await api("/api/users/" + u.id + "/follow", { method: "POST" });
-        event.target.innerHTML = result.following ? "&#10003; Following" : "+ Follow";
+        event.target.innerHTML = result.following ? `${svgIcon("check", "xs")} <span>Following</span>` : "+ Follow";
         event.target.classList.toggle("secondary", result.following);
         document.getElementById("followers-count").textContent = result.followers;
         toast(result.following ? `Now following ${u.full_name}` : `Unfollowed ${u.full_name}`);
@@ -113,7 +113,7 @@ async function loadCreations(userId) {
     box.innerHTML = posts.length
       ? posts.map(postCardHtml).join("")
       : `<div class="empty" style="grid-column:1/-1">
-           <div style="font-size:2rem; margin-bottom:8px;">&#127912;</div>
+           <div style="margin-bottom:12px; display:flex; justify-content:center;">${svgIcon("palette", "hero")}</div>
            <strong>No creations shared yet</strong>
            <p class="muted" style="margin-top:4px;">When this creator publishes creative works, they will appear here.</p>
          </div>`;

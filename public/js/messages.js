@@ -45,7 +45,7 @@ async function loadConversations() {
     if (!list || list.length === 0) {
       container.innerHTML = `
         <div class="empty" style="padding:32px 16px;">
-          <div style="font-size:1.8rem; margin-bottom:8px;">&#128172;</div>
+          <div style="margin-bottom:12px; display:flex; justify-content:center;">${svgIcon("message", "hero")}</div>
           <strong>No conversations yet</strong>
           <p class="muted" style="font-size:0.85rem; margin-top:4px;">Use the dropdown above to start a conversation.</p>
         </div>`;
@@ -136,7 +136,7 @@ async function loadThread(showLoading = false) {
     if (!data.messages || data.messages.length === 0) {
       box.innerHTML = `
         <div class="empty-chat-state">
-          <span class="empty-chat-state-icon" style="color:${accent.color}">&#9998;</span>
+          <span class="empty-chat-state-icon" style="color:${accent.color}; display:inline-flex; align-items:center; justify-content:center;">${svgIcon("edit", "xl")}</span>
           <h4>Conversation with ${esc(data.user.full_name)}</h4>
           <p>No messages yet. Send a friendly greeting to start collaborating!</p>
         </div>`;

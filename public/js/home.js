@@ -11,7 +11,7 @@ async function loadFeed() {
     if (!posts || posts.length === 0) {
       feed.innerHTML = `
         <div class="empty" style="grid-column:1/-1">
-          <div style="font-size:2.2rem; margin-bottom:8px;">&#127912;</div>
+          <div style="margin-bottom:12px; display:flex; justify-content:center;">${svgIcon("palette", "hero")}</div>
           <strong>No creations found in this category</strong>
           <p class="muted" style="margin: 6px 0 16px;">Be the first creator to share something exciting.</p>
           <a class="btn small" href="create.html">+ Share the first one</a>

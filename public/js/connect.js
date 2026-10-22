@@ -11,7 +11,7 @@ async function loadUsers() {
     if (!users || users.length === 0) {
       usersContainer.innerHTML = `
         <div class="empty" style="grid-column:1/-1">
-          <div style="font-size:2rem; margin-bottom:8px;">&#128101;</div>
+          <div style="margin-bottom:12px; display:flex; justify-content:center;">${svgIcon("users", "hero")}</div>
           <strong>No creators found</strong>
           <p class="muted" style="margin-top:4px;">Try searching for a different name, username, or creative focus.</p>
         </div>`;
@@ -26,9 +26,9 @@ async function loadUsers() {
         <p>${esc(u.bio) || '<span class="muted" style="font-style:italic">Creative community member</span>'}</p>
         <div class="row" style="justify-content:center; gap:8px; margin-top:auto;">
           <button class="btn small ${u.is_following ? "secondary" : ""}" id="fb-${u.id}" onclick="toggleFollow(${u.id})">
-            ${u.is_following ? "&#10003; Following" : "+ Follow"}
+            ${u.is_following ? `${svgIcon("check", "xs")} <span>Following</span>` : "+ Follow"}
           </button>
-          <a class="btn small secondary" href="messages.html?user=${u.id}" title="Send message">&#9993; Message</a>
+          <a class="btn small secondary" href="messages.html?user=${u.id}" title="Send message" style="display:inline-flex; align-items:center; gap:4px;">${svgIcon("mail", "xs")} <span>Message</span></a>
           <a class="btn small secondary" href="profile.html?id=${u.id}">Profile</a>
         </div>
       </div>
@@ -43,7 +43,7 @@ async function toggleFollow(id) {
     const result = await api("/api/users/" + id + "/follow", { method: "POST" });
     const button = document.getElementById("fb-" + id);
     if (button) {
-      button.innerHTML = result.following ? "&#10003; Following" : "+ Follow";
+      button.innerHTML = result.following ? `${svgIcon("check", "xs")} <span>Following</span>` : "+ Follow";
       button.classList.toggle("secondary", result.following);
     }
     const countEl = document.getElementById("fc-" + id);

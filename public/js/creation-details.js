@@ -51,10 +51,10 @@ async function loadCreation() {
         <p>${esc(c.description)}</p>
         <div class="row" style="margin:12px 0; gap:10px; align-items:center;">
           <button class="action like-btn ${c.liked_by_me ? "liked" : ""}" id="like-btn">
-            ${c.liked_by_me ? "&#9829; Liked" : "&#9825; Like"} (<span class="like-count">${c.likes}</span>)</button>
-          <button class="action share-btn" onclick="sharePost(${c.id}, this)">&#10532; Share (<span class="share-count">${c.shares || 0}</span>)</button>
+            ${c.liked_by_me ? svgIcon("heartFilled", "sm") + " Liked" : svgIcon("heart", "sm") + " Like"} (<span class="like-count">${c.likes}</span>)</button>
+          <button class="action share-btn" onclick="sharePost(${c.id}, this)">${svgIcon("share", "sm")} Share (<span class="share-count">${c.shares || 0}</span>)</button>
           <span class="muted"><span id="comment-count">${c.comment_list.length}</span> comments</span>
-          <button class="action" onclick="reportCreationPrompt(${c.id})" style="color:var(--muted); font-size:0.85rem;" title="Report creation">&#9873; Report</button>
+          <button class="action" onclick="reportCreationPrompt(${c.id})" style="color:var(--muted); font-size:0.85rem;" title="Report creation">${svgIcon("flag", "sm")} Report</button>
           ${isOwner ? `<button class="btn danger small" id="delete-btn">Delete</button>` : ""}
         </div>
         <h3 id="comments">Comments</h3>

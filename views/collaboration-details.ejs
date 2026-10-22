@@ -181,24 +181,40 @@
 
         <div class="meta-row">
           <div class="meta-item" id="meta-item-positions" data-field="positions" title="Positions needed">
-            <span class="meta-icon">&#128101;</span>
+            <span class="meta-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
             <span>Positions: <strong id="collab-positions">--</strong></span>
-            <span class="meta-edit-hint">✏️</span>
+            <span class="meta-edit-hint">
+              <svg class="svg-icon xs" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
           </div>
           <div class="meta-item" id="meta-item-duration" data-field="duration" title="Project duration">
-            <span class="meta-icon">&#9201;</span>
+            <span class="meta-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
             <span>Duration: <strong id="collab-duration">--</strong></span>
-            <span class="meta-edit-hint">✏️</span>
+            <span class="meta-edit-hint">
+              <svg class="svg-icon xs" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
           </div>
           <div class="meta-item" id="meta-item-location" data-field="location" title="Campus / Project location">
-            <span class="meta-icon">&#128205;</span>
+            <span class="meta-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </span>
             <span>Location: <strong id="collab-location">--</strong></span>
-            <span class="meta-edit-hint">✏️</span>
+            <span class="meta-edit-hint">
+              <svg class="svg-icon xs" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
           </div>
           <div class="meta-item" id="meta-item-experience" data-field="experience" title="Required experience level">
-            <span class="meta-icon">&#127891;</span>
+            <span class="meta-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </span>
             <span>Experience: <strong id="collab-experience">--</strong></span>
-            <span class="meta-edit-hint">✏️</span>
+            <span class="meta-edit-hint">
+              <svg class="svg-icon xs" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
           </div>
         </div>
       </div>
@@ -266,7 +282,9 @@
       <div class="modal-card" style="max-width:580px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
           <h3 style="margin:0; color:var(--heading); font-size:1.3rem;">Edit Collaboration Details</h3>
-          <button type="button" class="btn xs secondary" id="close-edit-modal-x" style="border:none; font-size:1.1rem; padding:4px 8px; cursor:pointer;">✕</button>
+          <button type="button" class="btn xs secondary" id="close-edit-modal-x" style="border:none; padding:4px 8px; cursor:pointer;" title="Close">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
         <p class="muted" style="font-size:0.86rem; margin-bottom:16px;">
           Update positions, duration, campus location, and experience requirements for this collaboration.
@@ -275,27 +293,42 @@
         <form id="edit-collab-form">
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
-              <label for="edit-positions" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">👥 Positions</label>
+              <label for="edit-positions" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Positions</span>
+              </label>
               <input type="text" id="edit-positions" placeholder="e.g. 1-2 members" required>
             </div>
             <div>
-              <label for="edit-duration" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">⏱️ Duration</label>
+              <label for="edit-duration" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Duration</span>
+              </label>
               <input type="text" id="edit-duration" placeholder="e.g. 2 - 4 weeks" required>
             </div>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
-              <label for="edit-location" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">📍 Location</label>
+              <label for="edit-location" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Location</span>
+              </label>
               <input type="text" id="edit-location" placeholder="e.g. Kanglung Campus" required>
             </div>
             <div>
-              <label for="edit-experience" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">🎓 Experience Level</label>
+              <label for="edit-experience" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                <span>Experience Level</span>
+              </label>
               <input type="text" id="edit-experience" placeholder="e.g. Beginner to Intermediate" required>
             </div>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
-              <label for="edit-mode" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">🌐 Project Mode</label>
+              <label for="edit-mode" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Project Mode</span>
+              </label>
               <select id="edit-mode">
                 <option value="Hybrid">Hybrid</option>
                 <option value="In-Person">In-Person</option>
@@ -303,16 +336,25 @@
               </select>
             </div>
             <div>
-              <label for="edit-category" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">🏷️ Category</label>
+              <label for="edit-category" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                <span>Category</span>
+              </label>
               <input type="text" id="edit-category" placeholder="e.g. Music & Sound, Design">
             </div>
           </div>
           <div style="margin-bottom:12px;">
-            <label for="edit-roles" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">🎭 Roles & Skills</label>
+            <label for="edit-roles" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              <span>Roles & Skills</span>
+            </label>
             <input type="text" id="edit-roles" placeholder="e.g. Dramyin Player, Vocalist, Audio Mixing">
           </div>
           <div style="margin-bottom:16px;">
-            <label for="edit-deliverables" style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:4px;">📦 Expected Deliverables</label>
+            <label for="edit-deliverables" style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              <span>Expected Deliverables</span>
+            </label>
             <textarea id="edit-deliverables" rows="2" placeholder="e.g. Collaborative tracks, source stems, final showcase..."></textarea>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:10px;">
@@ -328,7 +370,9 @@
       <div class="modal-card" style="max-width:540px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
           <h3 style="margin:0; color:var(--heading);">Request to Join Collaboration</h3>
-          <button type="button" class="btn xs secondary" id="close-modal-x" style="border:none; font-size:1.1rem; padding:4px 8px; cursor:pointer;">✕</button>
+          <button type="button" class="btn xs secondary" id="close-modal-x" style="border:none; padding:4px 8px; cursor:pointer;" title="Close">
+            <svg class="svg-icon sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
         <p class="muted" style="font-size:0.88rem; margin-bottom:14px;">
           Introduce yourself, specify your intended role, and upload sample files like audio demos, documents, or photos.
@@ -343,10 +387,12 @@
           <label style="font-weight:600; font-size:0.88rem; display:block; margin-bottom:6px;">
             Upload Sample: Audio Demo, Document, or Photo <span class="muted" style="font-weight:400;">(Optional)</span>
           </label>
-          <div id="file-dropzone" style="border:2px dashed var(--blue-border); border-radius:10px; padding:16px; text-align:center; background:#F8FAFC; cursor:pointer; transition:all 0.2s ease; margin-bottom:18px;">
+          <div id="file-dropzone" style="border:2px dashed var(--blue-border); border-radius:10px; padding:18px 16px; text-align:center; background:#F8FAFC; cursor:pointer; transition:all 0.2s ease; margin-bottom:18px;">
             <input type="file" id="apply-file" accept="image/*,audio/*,.pdf,.doc,.docx,.txt" style="display:none;">
             <div id="dropzone-idle">
-              <div style="font-size:1.8rem; margin-bottom:4px;">📎</div>
+              <div style="margin-bottom:6px; color:var(--blue-primary);">
+                <svg class="svg-icon xl" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
               <div style="font-weight:700; font-size:0.9rem; color:var(--ink);">Click to upload or drag & drop file</div>
               <div class="muted" style="font-size:0.78rem; margin-top:4px;">
                 Audio (<span style="color:#047857; font-weight:600;">MP3, WAV, OGG</span>), Photos (<span style="color:#2563eb; font-weight:600;">JPG, PNG, WEBP</span>), Docs (<span style="color:#b45309; font-weight:600;">PDF, DOC, TXT</span>)
@@ -354,15 +400,26 @@
             </div>
             <div id="dropzone-selected" class="hidden" style="display:flex; align-items:center; justify-content:space-between; background:#FFFFFF; border:1px solid var(--blue-border); border-radius:8px; padding:10px 14px; text-align:left;">
               <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-                <span id="selected-file-icon" style="font-size:1.6rem;">📄</span>
+                <span id="selected-file-icon" style="display:flex; align-items:center; color:var(--blue-primary);"></span>
                 <div style="overflow:hidden;">
                   <div id="selected-file-name" style="font-weight:700; font-size:0.88rem; color:var(--ink); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">file.ext</div>
                   <div id="selected-file-size" class="muted" style="font-size:0.78rem;">0 KB</div>
                 </div>
               </div>
-              <button type="button" id="remove-file-btn" class="btn xs secondary" style="color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">✕ Remove</button>
+              <button type="button" id="remove-file-btn" class="btn xs secondary" style="color:var(--danger); border-color:rgba(239, 68, 68, 0.3); display:inline-flex; align-items:center; gap:4px;">
+                <svg class="svg-icon xs" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Remove</span>
+              </button>
             </div>
           </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn secondary" id="close-modal-btn">Cancel</button>
+            <button type="submit" class="btn" id="confirm-apply-btn">Submit Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
           <div style="display:flex; justify-content:flex-end; gap:10px;">
             <button type="button" class="btn secondary" id="close-modal-btn">Cancel</button>

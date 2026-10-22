@@ -26,9 +26,9 @@ function updateThemeUI(activeChoice) {
     if (activeChoice === "system") {
       statusText.textContent = `System (${resolvedTheme === "dark" ? "Dark" : "Light"})`;
     } else if (activeChoice === "dark") {
-      statusText.textContent = "Dark Mode 🌙";
+      statusText.textContent = "Dark Mode";
     } else {
-      statusText.textContent = "Light Mode ☀️";
+      statusText.textContent = "Light Mode";
     }
   }
 }
@@ -43,9 +43,9 @@ function applyThemeSetting(choice, announce = true) {
   updateThemeUI(choice);
 
   if (announce) {
-    if (choice === "system") toast(`Theme set to System Default (${resolved === "dark" ? "Dark" : "Light"}) 💻`);
-    else if (choice === "dark") toast("Switched to Dark Mode 🌙");
-    else toast("Switched to Light Mode ☀️");
+    if (choice === "system") toast(`Theme set to System Default (${resolved === "dark" ? "Dark" : "Light"})`);
+    else if (choice === "dark") toast("Switched to Dark Mode");
+    else toast("Switched to Light Mode");
   }
 }
 

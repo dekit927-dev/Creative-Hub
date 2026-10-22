@@ -1122,7 +1122,7 @@ function renderAdminThumbnail(image, category, title = "") {
   if (type === 'video') {
     return `<div style="position:relative; width:48px; height:48px; flex-shrink:0;">
       <video src="${image}" style="width:48px; height:48px; object-fit:cover; border-radius:8px; background:#000; display:block;" preload="metadata"></video>
-      <span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.75); color:#fff; font-size:0.58rem; padding:1px 3px; border-radius:3px; font-weight:700;">▶</span>
+      <span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.75); color:#fff; padding:2px 3px; border-radius:3px; display:inline-flex; align-items:center; justify-content:center;"><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
     </div>`;
   }
   if (type === 'audio') {

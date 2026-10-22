@@ -22,11 +22,13 @@ function formatBytes(bytes) {
 
 function getFileIcon(type, filename = "") {
   const ext = (filename || "").split(".").pop().toLowerCase();
-  if (type === "audio" || ["mp3", "wav", "ogg", "m4a", "aac", "flac"].includes(ext)) return "🎵";
-  if (type === "photo" || ["jpg", "jpeg", "png", "webp", "gif", "svg"].includes(ext)) return "📸";
-  if (["pdf"].includes(ext)) return "📕";
-  if (["doc", "docx"].includes(ext)) return "📘";
-  return "📄";
+  if (type === "audio" || ["mp3", "wav", "ogg", "m4a", "aac", "flac"].includes(ext)) {
+    return svgIcon("music", "lg");
+  }
+  if (type === "photo" || ["jpg", "jpeg", "png", "webp", "gif", "svg"].includes(ext)) {
+    return svgIcon("image", "lg");
+  }
+  return svgIcon("fileText", "lg");
 }
 
 async function loadCollabDetails() {
@@ -79,8 +81,8 @@ function renderDetails(c) {
     });
 
     topActionBox.innerHTML = `
-      <button class="btn secondary small" onclick="openEditModal()" id="edit-collab-btn" style="font-weight:700;">
-        <span style="margin-right:4px;">✏️</span> Edit Project Details
+      <button class="btn secondary small" onclick="openEditModal()" id="edit-collab-btn" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">
+        ${svgIcon("edit", "sm")} <span>Edit Project Details</span>
       </button>
     `;
   } else {
@@ -106,9 +108,11 @@ function renderAttachmentPreview(attFile, attName, attType) {
       <div style="margin:10px 0; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:10px 14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <span style="font-size:0.85rem; font-weight:700; color:#166534; display:flex; align-items:center; gap:6px;">
-            <span>🎵</span> <span>Audio Demo:</span> <strong style="color:#14532D;">${name}</strong>
+            <span style="display:flex; align-items:center;">${svgIcon("music", "sm")}</span> <span>Audio Demo:</span> <strong style="color:#14532D;">${name}</strong>
           </span>
-          <a href="${url}" download="${name}" class="btn xs secondary" style="font-size:0.75rem; padding:3px 8px;">Download</a>
+          <a href="${url}" download="${name}" class="btn xs secondary" style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; padding:3px 8px;">
+            ${svgIcon("download", "xs")} <span>Download</span>
+          </a>
         </div>
         <audio controls preload="metadata" style="width:100%; height:36px; border-radius:6px;" src="${url}"></audio>
       </div>
@@ -120,9 +124,11 @@ function renderAttachmentPreview(attFile, attName, attType) {
       <div style="margin:10px 0; background:#FFFFFF; border:1px solid var(--blue-border); border-radius:10px; padding:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <span style="font-size:0.83rem; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px;">
-            <span>📸</span> <span>Attached Photo:</span> <strong>${name}</strong>
+            <span style="display:flex; align-items:center; color:var(--blue-primary);">${svgIcon("image", "sm")}</span> <span>Attached Photo:</span> <strong>${name}</strong>
           </span>
-          <a href="${url}" target="_blank" download="${name}" class="btn xs secondary" style="font-size:0.75rem; padding:3px 8px;">Download</a>
+          <a href="${url}" target="_blank" download="${name}" class="btn xs secondary" style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; padding:3px 8px;">
+            ${svgIcon("download", "xs")} <span>Download</span>
+          </a>
         </div>
         <a href="${url}" target="_blank" title="Click to view full image" style="display:inline-block; max-width:100%;">
           <img src="${url}" alt="${name}" style="max-height:180px; max-width:100%; border-radius:8px; object-fit:cover; display:block; border:1px solid #E2E8F0; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
@@ -135,14 +141,14 @@ function renderAttachmentPreview(attFile, attName, attType) {
   return `
     <div style="margin:10px 0; display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:10px; padding:10px 14px;">
       <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-        <span style="font-size:1.5rem;">${getFileIcon("document", attName)}</span>
+        <span style="display:flex; align-items:center; color:var(--blue-navy);">${getFileIcon("document", attName)}</span>
         <div style="overflow:hidden;">
           <div style="font-weight:700; font-size:0.86rem; color:var(--ink); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${name}</div>
           <span class="muted" style="font-size:0.75rem;">Document Attachment</span>
         </div>
       </div>
-      <a href="${url}" target="_blank" download="${name}" class="btn xs secondary" style="margin-left:10px; white-space:nowrap; padding:4px 10px;">
-        Open / Download
+      <a href="${url}" target="_blank" download="${name}" class="btn xs secondary" style="display:inline-flex; align-items:center; gap:4px; margin-left:10px; white-space:nowrap; padding:4px 10px;">
+        ${svgIcon("download", "xs")} <span>Download</span>
       </a>
     </div>
   `;
@@ -160,8 +166,8 @@ function renderApplicationCard(c) {
       <p class="muted" style="margin:0; font-size:0.85rem;">You initiated this collaboration. Update project parameters and review join requests below.</p>
     `;
     btnBox.innerHTML = `
-      <button class="btn secondary full small" onclick="openEditModal()" style="margin-top:10px; font-weight:600;">
-        ✏️ Edit Positions, Duration & Requirements
+      <button class="btn secondary full small" onclick="openEditModal()" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; margin-top:10px; font-weight:600;">
+        ${svgIcon("edit", "sm")} <span>Edit Positions, Duration & Requirements</span>
       </button>
       <button class="btn secondary full small" onclick="toggleProjectStatus()" style="margin-top:8px;">
         ${c.status === "Open" ? "Close Project to New Requests" : "Re-open Project for Collaborators"}

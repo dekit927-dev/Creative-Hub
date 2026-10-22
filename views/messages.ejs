@@ -30,11 +30,16 @@
       </div>
       <div class="chat-box" id="chat-box-panel">
         <div class="chat-head" id="chat-head">
-          <div class="chat-head-placeholder">&#128172; Select a conversation to start messaging</div>
+          <div class="chat-head-placeholder" style="display:inline-flex; align-items:center; gap:8px;">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Select a conversation to start messaging</span>
+          </div>
         </div>
         <div class="chat-messages" id="chat-messages">
           <div class="empty-chat-state">
-            <span class="empty-chat-state-icon">&#9993;</span>
+            <span class="empty-chat-state-icon" style="display:flex; justify-content:center; margin-bottom:12px;">
+              <svg class="svg-icon hero" viewBox="0 0 24 24" style="width:48px; height:48px; stroke:var(--blue-primary);"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
             <h4>No chat selected</h4>
             <p>Pick a contact from the list on the left, or select "+ Start a new chat" to connect with a creator.</p>
           </div>

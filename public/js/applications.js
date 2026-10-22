@@ -121,7 +121,7 @@ function renderList() {
         ${app.attachment_file ? `
           <div style="margin:8px 0; font-size:0.82rem;">
             <a href="${fileUrl(app.attachment_file)}" target="_blank" download class="row" style="display:inline-flex; align-items:center; gap:6px; background:var(--blue-pale); padding:4px 10px; border-radius:6px; color:var(--blue-navy); font-weight:600; text-decoration:none;">
-              <span>📎</span> <span>Attached Sample: ${esc(app.attachment_name || 'Download Attachment')}</span>
+              ${svgIcon("paperclip", "sm")} <span>Attached Sample: ${esc(app.attachment_name || 'Download Attachment')}</span>
             </a>
           </div>
         ` : ""}
