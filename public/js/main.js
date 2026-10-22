@@ -139,6 +139,11 @@ function renderNavbar(activeLink) {
     { href: "messages.html", name: "Messages", icon: "&#128172;" }
   ];
 
+  const isAdmin = window.location.pathname.startsWith("/admin") || activeLink === "admin";
+  if (isAdmin) {
+    document.body.classList.add("admin-page");
+  }
+
   const linkHtml = links.map(l =>
     `<a href="${l.href}" class="${activeLink === l.href ? "active" : ""}">${l.name}</a>`).join("");
 
@@ -167,8 +172,8 @@ function renderNavbar(activeLink) {
       <!-- Action items -->
       <div class="nav-right">
         <a class="icon-btn nav-search-icon-btn" href="search.html" title="Search" aria-label="Search">&#128269;</a>
-        ${currentUser && currentUser.role === "admin" ? `<a class="btn small secondary nav-admin-btn" href="/admin" style="font-weight:700">Admin</a>` : ""}
-        <a class="btn small nav-create-btn" href="create.html">+ Create</a>
+        ${!isAdmin && currentUser && currentUser.role === "admin" ? `<a class="btn small secondary nav-admin-btn" href="/admin" style="font-weight:700">Admin</a>` : ""}
+        <a class="btn small nav-create-btn ${isAdmin ? "hide-on-mobile" : ""}" href="create.html">+ Create</a>
         <div class="dropdown-wrap">
           <button class="icon-btn" id="bell-btn" title="Notifications" aria-label="Notifications">&#128276;<span class="badge hidden" id="bell-badge">0</span></button>
           <div class="dropdown hidden" id="notif-panel"></div>
@@ -178,12 +183,13 @@ function renderNavbar(activeLink) {
       </div>
     </div></nav>
 
-    <!-- Mobile Bottom Navigation Bar (Phones & Tabs <= 900px) -->
+    <!-- Mobile Bottom Navigation Bar (Phones & Tabs <= 900px, hidden on Admin) -->
+    ${!isAdmin ? `
     <nav class="mobile-bottom-bar" aria-label="Mobile Navigation">
       <div class="mobile-bottom-inner">
         ${bottomTabsHtml}
       </div>
-    </nav>`;
+    </nav>` : ""}`;
 
   document.getElementById("search-form").addEventListener("submit", (event) => {
     event.preventDefault();

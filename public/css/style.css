@@ -726,30 +726,53 @@ img {
     grid-template-columns: 1fr;
   }
   .admin-sidebar {
-    border-right: none;
-    border-bottom: 1px solid var(--line);
-    flex-direction: row;
-    overflow-x: auto;
-    flex-wrap: nowrap;
+    border-right: none !important;
+    border-bottom: 1px solid var(--line) !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding: 10px 12px;
-    gap: 8px;
+    padding: 8px 12px !important;
+    gap: 8px !important;
+    position: sticky;
+    top: 54px;
+    z-index: 90;
+    background: var(--card) !important;
+    align-items: center;
   }
   .admin-sidebar::-webkit-scrollbar {
-    display: none;
+    display: none !important;
   }
   .admin-sidebar-title {
-    display: none;
+    display: none !important;
+  }
+  .admin-sidebar > div:last-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+    display: flex;
+    flex-shrink: 0;
   }
   .admin-nav-item {
-    white-space: nowrap;
-    flex-shrink: 0;
-    padding: 8px 14px;
-    font-size: 0.85rem;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    padding: 7px 14px !important;
+    font-size: 0.84rem !important;
+    border-radius: 999px !important;
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+  .admin-nav-item:hover {
+    transform: none !important;
+  }
+  .admin-nav-item.active {
+    border-color: var(--blue-primary) !important;
   }
   .admin-main {
-    padding: 20px 14px 40px;
+    padding: 16px 14px 40px;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   .chart-grid {
     grid-template-columns: 1fr;
@@ -759,15 +782,20 @@ img {
     align-items: stretch;
     gap: 10px;
   }
+  .filter-bar > div:last-child {
+    margin-left: 0 !important;
+    justify-content: space-between;
+    width: 100%;
+  }
   .filter-group {
     flex-wrap: wrap;
   }
   .stat-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    gap: 10px;
   }
   .stat-card {
-    padding: 14px 16px;
+    padding: 12px 14px;
   }
 }
 
@@ -942,6 +970,46 @@ img {
   }
   .auth-card {
     padding: 24px 18px;
+  }
+
+  /* Admin Dashboard on Small Phones */
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .admin-header h1 {
+    font-size: 1.4rem;
+  }
+  .admin-sidebar {
+    padding: 6px 10px !important;
+    gap: 6px !important;
+  }
+  .admin-nav-item {
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+  }
+  .formula-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.82rem;
+  }
+  .tab-group {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .tab-group::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 0.82rem;
   }
 }
 
@@ -3059,11 +3127,51 @@ label {
   color: var(--blue-primary);
 }
 
+/* Admin Two-Column Responsive Grid */
+.admin-two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 860px) {
+  .admin-two-col-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+}
+
+/* Engagement Summary 2x2 Grid inside analytics card */
+.engagement-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .engagement-summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+}
+
+/* Admin Page Global Layout rules */
+body.admin-page {
+  padding-bottom: 24px !important;
+}
+
+body.admin-page .mobile-bottom-bar {
+  display: none !important;
+}
+
+body.admin-page .nav-admin-btn {
+  display: none !important;
+}
+
 @media (max-width: 900px) {
-  .admin-layout { grid-template-columns: 1fr; }
-  .admin-sidebar { border-right: none; border-bottom: 1px solid var(--line); flex-direction: row; flex-wrap: wrap; }
-  .admin-main { padding: 20px 16px 40px; }
-  .chart-grid { grid-template-columns: 1fr; }
+  body.admin-page .nav-create-btn {
+    display: none !important;
+  }
 }
 
 /* ================= HERO SECTION (Sherubtse Clock Tower) ================= */

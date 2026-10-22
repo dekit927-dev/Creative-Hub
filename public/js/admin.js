@@ -255,7 +255,7 @@ async function loadOverviewData() {
           </td>
           <td>${esc(p.creator.name)}</td>
           <td><span class="tag">${esc(p.category)}</span></td>
-          <td>❤️ ${p.likes} &middot; 💬 ${p.comments}</td>
+          <td>${p.likes} likes &middot; ${p.comments} comments</td>
         </tr>
       `).join('');
     } else {
@@ -501,7 +501,7 @@ async function loadAnalyticsData() {
     // Populate Engagement metrics summary
     const engSummary = document.getElementById('engagement-metrics-summary');
     engSummary.innerHTML = `
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div class="engagement-summary-grid">
         <div class="stat-card" style="box-shadow:none;">
           <div class="stat-card-label">Total Engagement</div>
           <div class="stat-card-value">${engagement.total_engagement}</div>
@@ -663,10 +663,10 @@ function renderRankingsTable(rankings) {
           </div>
         </td>
         <td><strong style="color:var(--brand); font-size:1.05rem;">${r.total_engagement}</strong></td>
-        <td>❤️ ${r.total_likes}</td>
-        <td>💬 ${r.total_comments}</td>
-        <td>🔄 ${r.total_shares}</td>
-        <td>🎨 ${r.total_posts}</td>
+        <td>${r.total_likes}</td>
+        <td>${r.total_comments}</td>
+        <td>${r.total_shares}</td>
+        <td>${r.total_posts}</td>
         <td>${r.avg_engagement_per_post}</td>
         <td>
           <button class="btn small secondary" onclick="openCreatorModal(${r.id})">Analytics</button>
@@ -701,8 +701,8 @@ function renderRankingsTable(rankings) {
         <td><strong style="color:var(--brand); font-size:1.05rem;">${r.total_posts}</strong></td>
         <td>+${r.posts_in_period}</td>
         <td style="font-size:0.85rem;">${r.latest_post_date ? formatDate(r.latest_post_date) : 'N/A'}</td>
-        <td>❤️ ${r.total_likes}</td>
-        <td>💬 ${r.total_comments}</td>
+        <td>${r.total_likes}</td>
+        <td>${r.total_comments}</td>
         <td><button class="btn small secondary" onclick="openCreatorModal(${r.id})">Analytics</button></td>
       </tr>
     `).join('');
@@ -731,11 +731,11 @@ function renderRankingsTable(rankings) {
             </div>
           </div>
         </td>
-        <td><strong style="color:#e53935; font-size:1.05rem;">❤️ ${r.total_likes}</strong></td>
+        <td><strong style="color:var(--ink); font-size:1.05rem;">${r.total_likes}</strong></td>
         <td>+${r.likes_in_period}</td>
         <td>${r.total_posts}</td>
         <td>${r.avg_likes_per_post}</td>
-        <td>💬 ${r.total_comments}</td>
+        <td>${r.total_comments}</td>
         <td><button class="btn small secondary" onclick="openCreatorModal(${r.id})">Analytics</button></td>
       </tr>
     `).join('');
@@ -764,11 +764,11 @@ function renderRankingsTable(rankings) {
             </div>
           </div>
         </td>
-        <td><strong style="color:#0288d1; font-size:1.05rem;">💬 ${r.total_comments}</strong></td>
+        <td><strong style="color:var(--ink); font-size:1.05rem;">${r.total_comments}</strong></td>
         <td>+${r.comments_in_period}</td>
         <td>${r.posts_with_comments}</td>
         <td>${r.avg_comments_per_post}</td>
-        <td>❤️ ${r.total_likes}</td>
+        <td>${r.total_likes}</td>
         <td><button class="btn small secondary" onclick="openCreatorModal(${r.id})">Analytics</button></td>
       </tr>
     `).join('');
@@ -796,7 +796,7 @@ function renderRankingsTable(rankings) {
             </div>
           </div>
         </td>
-        <td><strong style="color:#2e7d32; font-size:1.05rem;">🔄 ${r.total_shares}</strong></td>
+        <td><strong style="color:var(--ink); font-size:1.05rem;">${r.total_shares}</strong></td>
         <td>+${r.shares_in_period}</td>
         <td>${r.posts_with_shares}</td>
         <td>${r.total_posts}</td>
@@ -826,7 +826,7 @@ function renderRankingsTable(rankings) {
             </div>
           </div>
         </td>
-        <td><strong style="color:var(--brand); font-size:1.05rem;">🤝 ${r.total_followers}</strong></td>
+        <td><strong style="color:var(--brand); font-size:1.05rem;">${r.total_followers}</strong></td>
         <td>${r.total_posts}</td>
         <td>${r.total_engagement}</td>
         <td><button class="btn small secondary" onclick="openCreatorModal(${r.id})">Analytics</button></td>
@@ -939,10 +939,10 @@ async function executeCreatorComparison() {
             <tr>
               <td><strong>${esc(c.full_name)}</strong></td>
               <td>${c.total_posts}</td>
-              <td>❤️ ${c.total_likes}</td>
-              <td>💬 ${c.total_comments}</td>
-              <td>🔄 ${c.total_shares}</td>
-              <td>🤝 ${c.total_followers}</td>
+              <td>${c.total_likes}</td>
+              <td>${c.total_comments}</td>
+              <td>${c.total_shares}</td>
+              <td>${c.total_followers}</td>
               <td><strong style="color:var(--brand)">${c.total_engagement}</strong></td>
               <td>${c.avg_engagement}</td>
             </tr>
@@ -985,15 +985,15 @@ async function openCreatorModal(creatorId) {
         </div>
         <div class="stat-card" style="padding:12px;">
           <div class="stat-card-label">Likes</div>
-          <div class="stat-card-value" style="font-size:1.4rem; color:#e53935;">❤️ ${s.total_likes}</div>
+          <div class="stat-card-value" style="font-size:1.4rem; color:var(--ink);">${s.total_likes}</div>
         </div>
         <div class="stat-card" style="padding:12px;">
           <div class="stat-card-label">Comments</div>
-          <div class="stat-card-value" style="font-size:1.4rem; color:#0288d1;">💬 ${s.total_comments}</div>
+          <div class="stat-card-value" style="font-size:1.4rem; color:var(--ink);">${s.total_comments}</div>
         </div>
         <div class="stat-card" style="padding:12px;">
           <div class="stat-card-label">Shares</div>
-          <div class="stat-card-value" style="font-size:1.4rem; color:#2e7d32;">🔄 ${s.total_shares}</div>
+          <div class="stat-card-value" style="font-size:1.4rem; color:var(--ink);">${s.total_shares}</div>
         </div>
         <div class="stat-card" style="padding:12px;">
           <div class="stat-card-label">Engagement</div>
@@ -1025,9 +1025,9 @@ async function openCreatorModal(creatorId) {
                 <td><a href="creation-details.html?id=${c.id}" target="_blank" style="color:inherit; font-weight:600;">${esc(c.title)}</a></td>
                 <td><span class="tag">${esc(c.category)}</span></td>
                 <td>${formatDate(c.created_at)}</td>
-                <td>❤️ ${c.likes}</td>
-                <td>💬 ${c.comments}</td>
-                <td>🔄 ${c.shares}</td>
+                <td>${c.likes}</td>
+                <td>${c.comments}</td>
+                <td>${c.shares}</td>
                 <td><strong>${c.engagement}</strong></td>
               </tr>
             `).join('')}
@@ -1073,9 +1073,9 @@ async function loadContentAnalytics() {
         </td>
         <td><span class="tag">${esc(item.category)}</span></td>
         <td style="font-size:0.85rem;">${formatDate(item.created_at)}</td>
-        <td>❤️ ${item.likes}</td>
-        <td>💬 ${item.comments}</td>
-        <td>🔄 ${item.shares}</td>
+        <td>${item.likes}</td>
+        <td>${item.comments}</td>
+        <td>${item.shares}</td>
         <td><strong style="color:var(--brand); font-size:1.05rem;">${item.total_engagement}</strong></td>
         <td>
           <div style="display:flex; gap:6px;">
@@ -1126,9 +1126,9 @@ async function loadUsersList() {
         </td>
         <td style="font-size:0.88rem;">${esc(u.email)}</td>
         <td style="font-size:0.85rem;">${formatDate(u.joined_date)}</td>
-        <td>🎨 ${u.creations_count}</td>
-        <td>❤️ ${u.likes_received}</td>
-        <td>🤝 ${u.followers_count}</td>
+        <td>${u.creations_count}</td>
+        <td>${u.likes_received}</td>
+        <td>${u.followers_count}</td>
         <td><span class="status-pill ${u.status}">${u.status}</span></td>
         <td>
           <div style="display:flex; gap:6px;">
@@ -1216,7 +1216,7 @@ async function loadCreationsManagement() {
         <td>${esc(item.creator.name)}</td>
         <td><span class="tag">${esc(item.category)}</span></td>
         <td style="font-size:0.85rem;">${formatDate(item.created_at)}</td>
-        <td>❤️ ${item.likes} &middot; 💬 ${item.comments} &middot; 🔄 ${item.shares}</td>
+        <td>${item.likes} likes &middot; ${item.comments} comments &middot; ${item.shares} shares</td>
         <td>
           <button class="btn small" style="background:var(--danger);" onclick="deleteCreationPrompt(${item.id})">Delete</button>
         </td>
