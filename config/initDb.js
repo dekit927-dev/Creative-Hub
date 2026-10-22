@@ -55,11 +55,50 @@ async function syncUploadsToDb() {
   }
 }
 
+async function ensureMigrations() {
+  try {
+    await db.none(`
+      -- Collaborations table migrations
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS skills VARCHAR(255) DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS roles VARCHAR(255) DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS short_summary TEXT DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS category VARCHAR(100) DEFAULT 'Other';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS positions VARCHAR(50) DEFAULT '1-2';
+      ALTER TABLE collaborations ALTER COLUMN positions TYPE VARCHAR(50) USING positions::VARCHAR;
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS experience TEXT DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS participation_type VARCHAR(50) DEFAULT 'Individual';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS location VARCHAR(200) DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS mode VARCHAR(50) DEFAULT 'Remote';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS start_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS deadline TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS duration VARCHAR(100) DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS deliverables TEXT DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS tools VARCHAR(255) DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS compensation VARCHAR(100) DEFAULT 'Volunteer';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS application_instructions TEXT DEFAULT '';
+      ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'Open';
+
+      -- Users table migrations
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS notifications_enabled BOOLEAN DEFAULT TRUE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_data TEXT DEFAULT NULL;
+      ALTER TABLE users ALTER COLUMN profile_picture TYPE TEXT;
+
+      -- Creations table migrations
+      ALTER TABLE creations ADD COLUMN IF NOT EXISTS image_data TEXT DEFAULT NULL;
+      ALTER TABLE creations ALTER COLUMN image TYPE TEXT;
+    `);
+    console.log('Database schema migrations verified successfully.');
+  } catch (err) {
+    console.warn('Migration warning:', err.message);
+  }
+}
+
 async function initDb() {
   try {
     const schemaSql = fs.readFileSync(path.join(__dirname, '../models/schema.sql'), 'utf-8');
     await db.none(schemaSql);
     console.log('PostgreSQL database tables initialized successfully.');
+    await ensureMigrations();
     await syncUploadsToDb();
   } catch (error) {
     console.error('Error initializing database tables:', error);

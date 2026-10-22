@@ -570,6 +570,17 @@ async function runTests() {
     assert(collabCreateRes.status === 201 && collabCreateRes.data.id, 'Creator can post collaboration project with full rich specifications');
     const createdCollabId = collabCreateRes.data.id;
 
+    // Test quick post project form (from collaboration.html "Looking for collaborators" form)
+    const quickCollabRes = await request('POST', '/api/collaborations', {
+      'Authorization': `Bearer ${studentToken}`
+    }, {
+      title: 'Music Competition',
+      skills: 'Singing, instrument, songwriting',
+      description: 'work together'
+    });
+    assert(quickCollabRes.status === 201 && quickCollabRes.data.id && quickCollabRes.data.roles,
+      'Creator can post project using quick collaboration form without missing roles error');
+
     // Fetch collaboration details by ID
     const collabDetailsRes = await request('GET', `/api/collaborations/${createdCollabId}`, {
       'Authorization': `Bearer ${newStudentToken}`

@@ -29,6 +29,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(128) DEF
 ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE DEFAULT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_data TEXT DEFAULT NULL;
 ALTER TABLE users ALTER COLUMN profile_picture TYPE TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS notifications_enabled BOOLEAN DEFAULT TRUE;
 
 -- Ensure existing accounts created before verification or demo accounts are verified so users are not blocked
 UPDATE users SET email_verified = TRUE WHERE email_verified IS NULL OR email_verified = FALSE;
@@ -207,6 +208,8 @@ CREATE TABLE IF NOT EXISTS collaborations (
 );
 
 -- Migration safety for collaborations
+ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS skills VARCHAR(255) DEFAULT '';
+ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS roles VARCHAR(255) DEFAULT '';
 ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS short_summary TEXT DEFAULT '';
 ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS category VARCHAR(100) DEFAULT 'Other';
 ALTER TABLE collaborations ADD COLUMN IF NOT EXISTS positions VARCHAR(50) DEFAULT '1-2';
