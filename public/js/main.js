@@ -137,6 +137,8 @@ async function api(path, options = {}, retries = 2) {
     localStorage.removeItem("token");
     window.location.href = "login.html";
     throw new Error("Please log in.");
+  }
+
   if (!response.ok) {
     if (response.status === 502 || response.status === 503 || response.status === 504) {
       throw new Error("The platform server is waking up on Render. Please wait a few seconds and try again.");
@@ -163,7 +165,14 @@ async function initPage(activeLink) {
     window.location.href = "login.html";
     return null;
   }
-  currentUser = await api("/api/me");
+  try {
+    currentUser = await api("/api/me");
+  } catch (err) {
+    console.error("Authentication failed during initPage:", err);
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+    return null;
+  }
   renderNavbar(activeLink);
   renderFooter();
   loadNotifications();

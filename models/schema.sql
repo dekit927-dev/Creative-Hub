@@ -28,6 +28,15 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(128) DEFAULT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE DEFAULT NULL;
 
+-- Ensure existing accounts created before verification or demo accounts are verified
+UPDATE users SET email_verified = TRUE WHERE email_verified IS NULL OR (email_verified = FALSE AND verification_token IS NULL);
+UPDATE users SET email_verified = TRUE WHERE email IN (
+    'admin@sherubtse.edu.bt', 'sonam@sherubtse.edu.bt', 'tashi@sherubtse.edu.bt',
+    'dechen@sherubtse.edu.bt', 'karma@sherubtse.edu.bt', 'pema@sherubtse.edu.bt',
+    'chimi@sherubtse.edu.bt', 'kinley@sherubtse.edu.bt', 'tshering@sherubtse.edu.bt',
+    'sangay@sherubtse.edu.bt'
+);
+
 CREATE TABLE IF NOT EXISTS login_sessions (
     id SERIAL PRIMARY KEY,
     token VARCHAR(128) UNIQUE NOT NULL,
