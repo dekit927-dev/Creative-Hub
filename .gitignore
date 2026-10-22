@@ -7,6 +7,5 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-public/uploads/*
-!public/uploads/.gitkeep
-!public/uploads/*.svg
+# Ignore runtime user uploads with hash names, but keep demo and seed photos
+public/uploads/[0-9a-f][0-9a-f][0-9a-f]*

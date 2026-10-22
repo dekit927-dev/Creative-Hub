@@ -301,7 +301,7 @@ function postCardHtml(post) {
         <div><a href="profile.html?id=${post.user.id}">${esc(post.user.full_name)}</a>
         <div class="muted" style="font-size:0.82rem">@${esc(post.user.username)} &middot; ${formatDate(post.created_at)}</div></div>
       </div>
-      <a href="creation-details.html?id=${post.id}"><img class="post-img" src="${fileUrl(post.image)}" alt="${esc(post.title)}"></a>
+      <a href="creation-details.html?id=${post.id}"><img class="post-img" src="${fileUrl(post.image)}" alt="${esc(post.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';"></a>
       <div class="post-body">
         <span class="tag">${esc(post.category)}</span>
         <h3><a href="creation-details.html?id=${post.id}" style="color:inherit">${esc(post.title)}</a></h3>

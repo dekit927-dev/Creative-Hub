@@ -14,7 +14,7 @@ async function loadCreation() {
     const c = await api("/api/creations/" + creationId);
     const isOwner = c.user.id === currentUser.id;
     box.innerHTML = `
-      <div><img class="details-img" src="${fileUrl(c.image)}" alt="${esc(c.title)}"></div>
+      <div><img class="details-img" src="${fileUrl(c.image)}" alt="${esc(c.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';"></div>
       <div class="card">
         <span class="tag">${esc(c.category)}</span>
         <h1 style="font-size:1.6rem">${esc(c.title)}</h1>
