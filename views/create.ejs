@@ -21,10 +21,28 @@
         <select id="category"></select>
         <label for="description">Description</label>
         <textarea id="description" placeholder="Tell people about it"></textarea>
-        <label for="image">Image (JPG, PNG, GIF or WEBP, max 5 MB)</label>
-        <input type="file" id="image" accept="image/png,image/jpeg,image/gif,image/webp">
-        <img id="preview" class="hidden" style="margin-top:12px;border-radius:12px" alt="Preview">
-        <button class="btn full" type="submit" id="submit-btn">Create</button>
+        <label for="media-type">Upload File Type</label>
+        <select id="media-type">
+          <option value="image" selected>Photo / Image (JPG, PNG, GIF, WEBP)</option>
+          <option value="video">Video (MP4, WebM, MOV, MKV)</option>
+          <option value="audio">Audio (MP3, WAV, OGG, M4A)</option>
+        </select>
+
+        <label for="image" id="file-label">Choose Photo / Image (JPG, PNG, GIF, WEBP, max 15 MB)</label>
+        <input type="file" id="image" accept="image/png,image/jpeg,image/gif,image/webp,image/*">
+
+        <!-- Live Preview Container -->
+        <div id="preview-wrap" class="hidden" style="margin-top:14px; border-radius:12px; overflow:hidden; background:var(--blue-pale); border:1px solid var(--blue-border); padding:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span id="preview-badge" class="tag" style="margin:0;">Preview</span>
+            <span id="preview-size" class="muted" style="font-size:0.8rem; font-weight:600;"></span>
+          </div>
+          <img id="preview-img" class="hidden" style="width:100%; max-height:360px; object-fit:contain; border-radius:8px; display:block;" alt="Photo preview">
+          <video id="preview-video" class="hidden" style="width:100%; max-height:360px; border-radius:8px; display:block;" controls playsinline></video>
+          <audio id="preview-audio" class="hidden" style="width:100%; margin-top:6px; display:block;" controls></audio>
+        </div>
+
+        <button class="btn full" type="submit" id="submit-btn" style="margin-top:20px;">Create</button>
       </form>
     </div>
   </main>

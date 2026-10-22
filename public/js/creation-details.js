@@ -13,8 +13,33 @@ async function loadCreation() {
   try {
     const c = await api("/api/creations/" + creationId);
     const isOwner = c.user.id === currentUser.id;
+    const mediaType = getMediaType(c.image, c.category);
+    let mediaHtml = '';
+    if (mediaType === 'video') {
+      mediaHtml = `
+        <div class="details-media-container video-details-container">
+          <video class="details-img details-video-player" src="${fileUrl(c.image)}" controls playsinline autoplay muted preload="auto"></video>
+        </div>`;
+    } else if (mediaType === 'audio') {
+      mediaHtml = `
+        <div class="details-media-container audio-details-container">
+          <div class="details-audio-box">
+            <div class="audio-disc-icon" style="width:64px; height:64px;">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <h2 style="margin:0 0 4px; font-size:1.3rem; color:var(--blue-navy);">${esc(c.title)}</h2>
+              <div class="muted" style="font-size:0.88rem;">Audio recording by ${esc(c.user.full_name)}</div>
+            </div>
+          </div>
+          <audio class="details-audio-player" src="${fileUrl(c.image)}" controls preload="auto" style="width:100%; margin-top:16px;"></audio>
+        </div>`;
+    } else {
+      mediaHtml = `<div><img class="details-img" src="${fileUrl(c.image)}" alt="${esc(c.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';"></div>`;
+    }
+
     box.innerHTML = `
-      <div><img class="details-img" src="${fileUrl(c.image)}" alt="${esc(c.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';"></div>
+      ${mediaHtml}
       <div class="card">
         <span class="tag">${esc(c.category)}</span>
         <h1 style="font-size:1.6rem">${esc(c.title)}</h1>

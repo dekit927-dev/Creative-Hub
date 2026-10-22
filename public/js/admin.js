@@ -1111,6 +1111,22 @@ function closeCreatorModal() {
   document.getElementById('creator-modal').classList.add('hidden');
 }
 
+function renderAdminThumbnail(image, category, title = "") {
+  const type = typeof getMediaType === 'function' ? getMediaType(image, category) : 'image';
+  if (type === 'video') {
+    return `<div style="position:relative; width:48px; height:48px; flex-shrink:0;">
+      <video src="${image}" style="width:48px; height:48px; object-fit:cover; border-radius:8px; background:#000; display:block;" preload="metadata"></video>
+      <span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.75); color:#fff; font-size:0.58rem; padding:1px 3px; border-radius:3px; font-weight:700;">▶</span>
+    </div>`;
+  }
+  if (type === 'audio') {
+    return `<div style="width:48px; height:48px; border-radius:8px; background:var(--blue-pale); color:var(--blue-primary); display:grid; place-items:center; flex-shrink:0;" title="Audio track">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    </div>`;
+  }
+  return `<img src="${image}" style="width:48px; height:48px; object-fit:cover; border-radius:8px; flex-shrink:0; display:block;" alt="${esc(title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';">`;
+}
+
 // ================= 4. CONTENT ANALYTICS =================
 async function loadContentAnalytics() {
   try {
@@ -1127,7 +1143,7 @@ async function loadContentAnalytics() {
         <td><strong>#${item.rank}</strong></td>
         <td>
           <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${item.image}" style="width:48px; height:48px; object-fit:cover; border-radius:8px;" alt="${esc(item.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';">
+            ${renderAdminThumbnail(item.image, item.category, item.title)}
             <div>
               <a href="creation-details.html?id=${item.id}" target="_blank" style="color:inherit; font-weight:700;">${esc(item.title)}</a>
               <div class="muted" style="font-size:0.78rem;">${esc(item.description.slice(0, 50))}${item.description.length > 50 ? '...' : ''}</div>
@@ -1329,7 +1345,7 @@ async function loadCreationsManagement() {
     body.innerHTML = data.items.map(item => `
       <tr>
         <td>
-          <img src="${item.image}" style="width:48px; height:48px; object-fit:cover; border-radius:6px;" alt="" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';">
+          ${renderAdminThumbnail(item.image, item.category, item.title)}
         </td>
         <td>
           <a href="creation-details.html?id=${item.id}" target="_blank" style="color:inherit; font-weight:600;">${esc(item.title)}</a>

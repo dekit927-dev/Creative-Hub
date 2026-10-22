@@ -369,6 +369,62 @@ async function loadNotifications() {
 }
 
 // ---------- post cards (used on Home, Profile and Search) ----------
+function getMediaType(filename, category = "") {
+  if (!filename) return "image";
+  const clean = filename.split("?")[0].split("#")[0];
+  const ext = clean.split(".").pop().toLowerCase();
+  const videoExts = ["mp4", "webm", "mov", "mkv", "ogv", "avi"];
+  const audioExts = ["mp3", "wav", "ogg", "m4a", "aac", "flac"];
+  if (videoExts.includes(ext)) return "video";
+  if (audioExts.includes(ext)) return "audio";
+  if (category && category.toLowerCase() === "video") return "video";
+  if (category && (category.toLowerCase() === "music" || category.toLowerCase() === "audio")) return "audio";
+  return "image";
+}
+
+function renderPostMedia(post) {
+  const type = getMediaType(post.image, post.category);
+  const src = fileUrl(post.image);
+
+  if (type === "video") {
+    return `
+      <div class="post-media-container video-container">
+        <video class="post-img post-video-player" src="${src}" controls playsinline preload="metadata"></video>
+        <span class="media-type-badge video-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Video
+        </span>
+      </div>`;
+  }
+
+  if (type === "audio") {
+    return `
+      <div class="post-media-container audio-container">
+        <div class="post-audio-container">
+          <div class="audio-wave-visual">
+            <div class="audio-disc-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
+            <div class="audio-card-info">
+              <strong class="audio-card-title">${esc(post.title)}</strong>
+              <span class="audio-card-artist">${esc(post.user.full_name)}</span>
+            </div>
+            <span class="media-type-badge audio-badge" style="position:static;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+              Audio
+            </span>
+          </div>
+          <audio class="post-audio-player" src="${src}" controls preload="metadata"></audio>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <a href="creation-details.html?id=${post.id}">
+      <img class="post-img" src="${src}" alt="${esc(post.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';">
+    </a>`;
+}
+
 function postCardHtml(post) {
   return `
     <article class="card post reveal-on-scroll" id="post-${post.id}">
@@ -377,7 +433,7 @@ function postCardHtml(post) {
         <div><a href="profile.html?id=${post.user.id}">${esc(post.user.full_name)}</a>
         <div class="muted" style="font-size:0.82rem">@${esc(post.user.username)} &middot; ${formatDate(post.created_at)}</div></div>
       </div>
-      <a href="creation-details.html?id=${post.id}"><img class="post-img" src="${fileUrl(post.image)}" alt="${esc(post.title)}" onerror="this.onerror=null; this.src='/images/sherubtse_clock_tower.jpg';"></a>
+      ${renderPostMedia(post)}
       <div class="post-body">
         <span class="tag">${esc(post.category)}</span>
         <h3><a href="creation-details.html?id=${post.id}" style="color:inherit">${esc(post.title)}</a></h3>

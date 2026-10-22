@@ -1,4 +1,6 @@
+const path = require('path');
 const CreationModel = require('../models/creationModel');
+const CategoryModel = require('../models/categoryModel');
 const NotificationModel = require('../models/notificationModel');
 
 const CreationController = {
@@ -25,12 +27,27 @@ const CreationController = {
         return res.status(400).json({ detail: 'Please enter a title.' });
       }
 
-      if (!CreationModel.CATEGORIES.includes(category)) {
+      const isKnownCategory = CreationModel.CATEGORIES.includes(category) || (await CategoryModel.getByName(category));
+      if (!isKnownCategory) {
         return res.status(400).json({ detail: 'Please choose a valid category.' });
       }
 
       if (!req.file) {
-        return res.status(400).json({ detail: 'Please upload an image for your creation.' });
+        return res.status(400).json({ detail: 'Please upload a photo, video, or audio file for your creation.' });
+      }
+
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const isVideo = req.file.mimetype.startsWith('video/') || ['.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi'].includes(ext);
+      const isAudio = req.file.mimetype.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'].includes(ext);
+
+      if (isVideo && req.file.size > 100 * 1024 * 1024) {
+        return res.status(400).json({ detail: 'Video size cannot exceed 100 MB.' });
+      }
+      if (isAudio && req.file.size > 30 * 1024 * 1024) {
+        return res.status(400).json({ detail: 'Audio size cannot exceed 30 MB.' });
+      }
+      if (!isVideo && !isAudio && req.file.size > 15 * 1024 * 1024) {
+        return res.status(400).json({ detail: 'Photo size cannot exceed 15 MB.' });
       }
 
       const creation = await CreationModel.create({

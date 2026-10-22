@@ -20,18 +20,29 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  const allowedExtensions = [
+    // Photos & Images
+    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg',
+    // Videos
+    '.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi',
+    // Audio
+    '.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'
+  ];
   const ext = path.extname(file.originalname).toLowerCase();
-  if (allowedExtensions.includes(ext) && file.mimetype.startsWith('image/')) {
+  const isImage = file.mimetype.startsWith('image/') || ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext);
+  const isVideo = file.mimetype.startsWith('video/') || ['.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi'].includes(ext);
+  const isAudio = file.mimetype.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'].includes(ext);
+
+  if (allowedExtensions.includes(ext) && (isImage || isVideo || isAudio)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid image. Please upload a JPG, PNG, GIF or WEBP file.'), false);
+    cb(new Error('Invalid file type. Please upload a photo (JPG, PNG, GIF, WEBP), video (MP4, WebM, MOV), or audio (MP3, WAV, OGG) file.'), false);
   }
 };
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB max for video uploads
   fileFilter
 });
 
