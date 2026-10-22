@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Messages - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container">
+    <div class="page-title">
+      <h1>Direct Messages</h1>
+    </div>
+    <div class="chat-layout" id="chat-layout">
+      <div class="chat-list" id="chat-list-panel">
+        <div class="chat-list-header">
+          <div class="chat-list-title">
+            <span>Conversations</span>
+          </div>
+          <select id="new-chat" class="chat-select" title="Start a conversation with a creator">
+            <option value="">+ Start a new chat...</option>
+          </select>
+        </div>
+        <div class="chat-list-scroll" id="conversations">
+          <div class="loading-box"><div class="spinner-ring"></div><span>Loading chats...</span></div>
+        </div>
+      </div>
+      <div class="chat-box" id="chat-box-panel">
+        <div class="chat-head" id="chat-head">
+          <div class="chat-head-placeholder">&#128172; Select a conversation to start messaging</div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="empty-chat-state">
+            <span class="empty-chat-state-icon">&#9993;</span>
+            <h4>No chat selected</h4>
+            <p>Pick a contact from the list on the left, or select "+ Start a new chat" to connect with a creator.</p>
+          </div>
+        </div>
+        <form class="chat-form hidden" id="chat-form">
+          <input type="text" id="chat-input" placeholder="Write a message... (Press Enter to send)" autocomplete="off">
+          <button class="btn" id="send-btn" type="submit" disabled>Send</button>
+        </form>
+      </div>
+    </div>
+  </main>
+  <script src="js/main.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/messages.js"></script>
+</body>
+</html>

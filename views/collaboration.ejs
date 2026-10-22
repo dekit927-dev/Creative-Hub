@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collaborate - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container">
+    <div class="page-title"><h1>Collaboration hub</h1>
+      <button class="btn" id="toggle-form">+ Post a project</button></div>
+    <div class="card hidden" id="collab-form-card" style="margin-bottom:20px">
+      <h3>Looking for collaborators</h3>
+      <div id="form-message" class="message error hidden"></div>
+      <form id="collab-form">
+        <label for="k-title">Project title</label><input type="text" id="k-title">
+        <label for="k-skills">Required skills</label><input type="text" id="k-skills" placeholder="e.g. Illustration, Animation">
+        <label for="k-description">Description</label><textarea id="k-description"></textarea>
+        <button class="btn full" type="submit">Post project</button>
+      </form>
+    </div>
+    <div id="message" class="message error hidden"></div>
+    <div id="list" class="stack"></div>
+  </main>
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/collaboration.js"></script>
+</body>
+</html>

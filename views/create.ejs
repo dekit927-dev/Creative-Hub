@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container" style="max-width:640px">
+    <div class="card">
+      <h2>Share a new creation</h2>
+      <div id="message" class="message error hidden"></div>
+      <form id="create-form">
+        <label for="title">Title</label>
+        <input type="text" id="title" maxlength="100" placeholder="Give your work a name">
+        <label for="category">Category</label>
+        <select id="category"></select>
+        <label for="description">Description</label>
+        <textarea id="description" placeholder="Tell people about it"></textarea>
+        <label for="image">Image (JPG, PNG, GIF or WEBP, max 5 MB)</label>
+        <input type="file" id="image" accept="image/png,image/jpeg,image/gif,image/webp">
+        <img id="preview" class="hidden" style="margin-top:12px;border-radius:12px" alt="Preview">
+        <button class="btn full" type="submit" id="submit-btn">Create</button>
+      </form>
+    </div>
+  </main>
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/create.js"></script>
+</body>
+</html>

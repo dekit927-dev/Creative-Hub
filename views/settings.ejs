@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container">
+    <h1>Settings</h1>
+    <div class="card settings-section">
+      <h3>Account</h3>
+      <div id="account-message" class="message hidden"></div>
+      <form id="account-form">
+        <label for="s-name">Full name</label><input type="text" id="s-name">
+        <label for="s-username">Username</label><input type="text" id="s-username">
+        <label for="s-email">Email</label><input type="email" id="s-email">
+        <button class="btn" style="margin-top:16px" type="submit">Save account</button>
+      </form>
+    </div>
+    <div class="card settings-section">
+      <h3>Password</h3>
+      <div id="password-message" class="message hidden"></div>
+      <form id="password-form">
+        <label for="p-current">Current password</label><input type="password" id="p-current">
+        <label for="p-new">New password</label><input type="password" id="p-new">
+        <label for="p-confirm">Confirm new password</label><input type="password" id="p-confirm">
+        <button class="btn" style="margin-top:16px" type="submit">Change password</button>
+      </form>
+    </div>
+    <div class="card settings-section theme-settings-card">
+      <div class="settings-head-row">
+        <div>
+          <h3 style="margin:0 0 4px;">Appearance & Theme</h3>
+          <p class="muted" style="margin:0; font-size:0.92rem;">Choose your preferred display theme for Creative Hub across all pages.</p>
+        </div>
+        <div class="current-theme-badge" id="current-theme-pill">
+          <span class="theme-dot"></span>
+          <span id="theme-status-text">Light Mode</span>
+        </div>
+      </div>
+
+      <!-- Interactive Theme Selector Cards -->
+      <div class="theme-options-grid">
+        <!-- Light Theme Card -->
+        <div class="theme-card" data-theme-choice="light" id="theme-card-light" tabindex="0" role="button" aria-label="Select Light Theme">
+          <div class="theme-preview-box light-preview">
+            <div class="preview-header"></div>
+            <div class="preview-body">
+              <div class="preview-line"></div>
+              <div class="preview-line short"></div>
+              <div class="preview-btn"></div>
+            </div>
+            <span class="preview-icon">&#9728;</span>
+          </div>
+          <div class="theme-card-info">
+            <div class="theme-card-title-row">
+              <strong>Light Mode</strong>
+              <span class="theme-check-icon">&#10003;</span>
+            </div>
+            <p>Clean, high-contrast daylight aesthetic with crisp blue highlights.</p>
+          </div>
+        </div>
+
+        <!-- Dark Theme Card -->
+        <div class="theme-card" data-theme-choice="dark" id="theme-card-dark" tabindex="0" role="button" aria-label="Select Dark Theme">
+          <div class="theme-preview-box dark-preview">
+            <div class="preview-header"></div>
+            <div class="preview-body">
+              <div class="preview-line"></div>
+              <div class="preview-line short"></div>
+              <div class="preview-btn"></div>
+            </div>
+            <span class="preview-icon">&#9790;</span>
+          </div>
+          <div class="theme-card-info">
+            <div class="theme-card-title-row">
+              <strong>Dark Mode</strong>
+              <span class="theme-check-icon">&#10003;</span>
+            </div>
+            <p>Sleek obsidian theme designed to reduce glare and eye fatigue.</p>
+          </div>
+        </div>
+
+        <!-- System Auto Card -->
+        <div class="theme-card" data-theme-choice="system" id="theme-card-system" tabindex="0" role="button" aria-label="Select System Default Theme">
+          <div class="theme-preview-box system-preview">
+            <div class="preview-split-left"></div>
+            <div class="preview-split-right"></div>
+            <span class="preview-icon">&#128187;</span>
+          </div>
+          <div class="theme-card-info">
+            <div class="theme-card-title-row">
+              <strong>System Auto</strong>
+              <span class="theme-check-icon">&#10003;</span>
+            </div>
+            <p>Automatically syncs with your device operating system display mode.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Toggle Capsule -->
+      <div class="theme-quick-switch-wrap">
+        <span class="quick-switch-label">Quick toggle:</span>
+        <div class="theme-pill-switch">
+          <button type="button" class="theme-pill-btn" id="btn-toggle-light" title="Switch to Light Mode">&#9728; Light</button>
+          <button type="button" class="theme-pill-btn" id="btn-toggle-dark" title="Switch to Dark Mode">&#9790; Dark</button>
+        </div>
+      </div>
+    </div>
+    <div class="card settings-section">
+      <h3>Notifications</h3>
+      <div class="switch-row"><span>Receive notifications</span><input type="checkbox" id="notif-toggle" style="width:auto;transform:scale(1.4)"></div>
+    </div>
+    <div class="card settings-section">
+      <h3>Log out</h3>
+      <p class="muted">You will need to log in again to use Creative Hub.</p>
+      <button class="btn danger" id="logout-btn">Log out</button>
+    </div>
+  </main>
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

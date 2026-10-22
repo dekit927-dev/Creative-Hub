@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Challenges - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container">
+    <div class="page-title"><h1>Creative challenges</h1>
+      <button class="btn" id="toggle-form">+ New challenge</button></div>
+    <div class="card hidden" id="challenge-form-card" style="margin-bottom:20px">
+      <h3>Start a challenge</h3>
+      <div id="form-message" class="message error hidden"></div>
+      <form id="challenge-form">
+        <label for="c-title">Title</label><input type="text" id="c-title">
+        <label for="c-category">Category</label><select id="c-category"></select>
+        <label for="c-deadline">Deadline</label><input type="date" id="c-deadline">
+        <label for="c-description">Description</label><textarea id="c-description"></textarea>
+        <button class="btn full" type="submit">Create challenge</button>
+      </form>
+    </div>
+    <div id="message" class="message error hidden"></div>
+    <div id="list" class="stack"></div>
+  </main>
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/challenges.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profile - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="profile-page-body">
+  <div id="navbar"></div>
+  <div class="profile-page-wrapper">
+    <main class="container profile-container">
+      <div id="message" class="message error hidden"></div>
+      
+      <!-- Distinct User Profile Header Card -->
+      <div id="profile-head">
+        <div class="loading-box"><div class="spinner-ring"></div><span>Loading profile...</span></div>
+      </div>
+
+      <!-- Edit Profile Modal / Card -->
+      <div class="card edit-profile-card hidden" id="edit-card">
+        <h3>Edit Profile Details</h3>
+        <div id="edit-message" class="message error hidden"></div>
+        <form id="edit-form">
+          <label for="e-name">Full name</label>
+          <input type="text" id="e-name" placeholder="Enter your full name" required>
+          
+          <label for="e-bio">Bio & Creative Interests</label>
+          <textarea id="e-bio" maxlength="300" placeholder="Share your creative background, hobbies, or mediums..."></textarea>
+          
+          <label for="e-picture">Profile Picture (JPG, PNG, GIF or WEBP)</label>
+          <input type="file" id="e-picture" accept="image/png,image/jpeg,image/gif,image/webp">
+          <div id="avatar-preview-wrap" class="hidden" style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+            <img id="avatar-preview-img" class="avatar" src="" alt="Avatar preview" style="width:48px; height:48px; border:2px solid var(--blue-primary)">
+            <span class="muted" style="font-size:0.85rem;">New photo selected</span>
+          </div>
+
+          <div class="row" style="margin-top:20px; gap:10px;">
+            <button class="btn" type="submit" id="save-profile-btn">Save changes</button>
+            <button class="btn secondary" type="button" id="cancel-edit">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Creations Section -->
+      <div class="profile-creations-section">
+        <h2>Creations</h2>
+        <div id="creations" class="grid">
+          <div class="loading-box" style="grid-column:1/-1;"><div class="spinner-ring"></div><span>Loading creations...</span></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>

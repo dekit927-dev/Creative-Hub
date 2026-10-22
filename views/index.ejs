@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome - Creative Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar"><div class="nav-inner">
+    <a class="logo" href="index.html"><span class="logo-mark">C</span>Creative Hub</a>
+    <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+      <a class="btn small secondary" href="login.html">Log in</a>
+      <a class="btn small" href="register.html">Sign up</a>
+    </div>
+  </div></nav>
+
+  <!-- Hero with Sherubtse Clock Tower background like Image 1 -->
+  <section class="home-hero">
+    <div class="home-hero-overlay"></div>
+    <div class="home-hero-content">
+      <span class="hero-eyebrow">SHERUBTSE CREATIVE COMMUNITY</span>
+      <h1 class="hero-title">Together, We Build a Creative Community.</h1>
+      <p class="hero-subtitle">Students, photographers, designers, and writers coming together to share artwork, capture campus moments, and collaborate across Sherubtse College.</p>
+      <div class="hero-actions">
+        <a class="btn-hero-primary" href="register.html">Sign Up — Join Us</a>
+        <a class="btn-hero-secondary" href="login.html">Member Log In</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer details like Image 3 -->
+  <div id="footer"></div>
+
+  <script>if (localStorage.getItem("token")) window.location.href = "home.html";</script>
+  <script src="js/main.js"></script>
+  <script>renderFooter();</script>
+</body>
+</html>
