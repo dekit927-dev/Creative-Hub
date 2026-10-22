@@ -332,6 +332,43 @@ async function runTests() {
     assert(parseInt(postShares.count, 10) === parseInt(preShares.count, 10) + 1,
       'Share event persisted accurately to PostgreSQL share_events table');
 
+    // 12. User Post Deletion & Permissions Tests
+    console.log('\n--- TEST GROUP 11: USER POST DELETION & PERMISSIONS ---');
+    // Create a temporary post owned by Sonam
+    const testPost = await db.one(`
+      INSERT INTO creations (user_id, title, description, category, image)
+      VALUES ($1, 'Temporary Creative Video/Artwork', 'User delete option test', 'Other', 'temp_test_del.jpg')
+      RETURNING id, user_id
+    `, [studentLogin.data.user.id]);
+
+    // Unauthenticated delete request should return 401
+    const unauthDelRes = await request('DELETE', `/api/creations/${testPost.id}`);
+    assert(unauthDelRes.status === 401, 'Unauthenticated user cannot delete posts (401 Unauthorized)');
+
+    // Log in as a different student (Tashi)
+    const tashiLogin = await request('POST', '/api/login', {}, {
+      email: 'tashi@sherubtse.edu.bt',
+      password: 'password123'
+    });
+    const tashiToken = tashiLogin.data.token;
+
+    // Different student attempting to delete Sonam's post should return 403
+    const forbiddenDelRes = await request('DELETE', `/api/creations/${testPost.id}`, {
+      'Authorization': `Bearer ${tashiToken}`
+    });
+    assert(forbiddenDelRes.status === 403, 'User cannot delete another creator\'s post (403 Forbidden)');
+
+    // Owner (Sonam) deleting her own post should succeed (200)
+    const ownerDelRes = await request('DELETE', `/api/creations/${testPost.id}`, {
+      'Authorization': `Bearer ${studentToken}`
+    });
+    assert(ownerDelRes.status === 200 && ownerDelRes.data.message.includes('deleted'),
+      'Creator can successfully delete their own post with delete option');
+
+    // Verify post is gone from DB
+    const checkDeleted = await db.oneOrNone('SELECT id FROM creations WHERE id = $1', [testPost.id]);
+    assert(checkDeleted === null, 'Deleted post is permanently removed from the database');
+
   } catch (err) {
     console.error('Test execution error:', err);
     failed++;

@@ -426,12 +426,23 @@ function renderPostMedia(post) {
 }
 
 function postCardHtml(post) {
+  const isOwner = currentUser && (currentUser.id === post.user.id || currentUser.role === 'admin');
   return `
     <article class="card post reveal-on-scroll" id="post-${post.id}">
       <div class="post-head">
         <a href="profile.html?id=${post.user.id}">${avatar(post.user)}</a>
-        <div><a href="profile.html?id=${post.user.id}">${esc(post.user.full_name)}</a>
+        <div style="flex:1; min-width:0;"><a href="profile.html?id=${post.user.id}">${esc(post.user.full_name)}</a>
         <div class="muted" style="font-size:0.82rem">@${esc(post.user.username)} &middot; ${formatDate(post.created_at)}</div></div>
+        ${isOwner ? `
+          <button class="post-delete-btn" onclick="deletePostPrompt(${post.id})" title="Delete this creation" aria-label="Delete this creation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+            <span>Delete</span>
+          </button>` : ''}
       </div>
       ${renderPostMedia(post)}
       <div class="post-body">
@@ -444,9 +455,41 @@ function postCardHtml(post) {
           ${post.liked_by_me ? "&#9829; Liked" : "&#9825; Like"} (<span class="like-count">${post.likes}</span>)</button>
         <a class="action" href="creation-details.html?id=${post.id}#comments">&#128172; Comments (${post.comments})</a>
         <button class="action share-btn" onclick="sharePost(${post.id}, this)" title="Share creation">&#10532; Share (<span class="share-count">${post.shares || 0}</span>)</button>
+        ${isOwner ? `
+          <button class="action action-delete" onclick="deletePostPrompt(${post.id})" title="Delete this creation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Delete</span>
+          </button>` : ''}
         <button class="action" onclick="reportCreationPrompt(${post.id})" title="Report creation" style="margin-left:auto; color:var(--muted); font-size:0.85rem;">&#9873; Report</button>
       </div>
     </article>`;
+}
+
+async function deletePostPrompt(id) {
+  if (!confirm("Are you sure you want to delete this creation? This cannot be undone.")) return;
+  try {
+    const res = await api("/api/creations/" + id, { method: "DELETE" });
+    toast(res && res.message ? res.message : "Creation deleted successfully.");
+    const el = document.getElementById("post-" + id);
+    if (el) {
+      el.style.transition = "all 0.35s ease";
+      el.style.opacity = "0";
+      el.style.transform = "scale(0.92)";
+      setTimeout(() => {
+        el.remove();
+        const countEl = document.querySelector(".profile-stat-tile strong");
+        if (countEl && !isNaN(parseInt(countEl.textContent, 10))) {
+          const current = parseInt(countEl.textContent, 10);
+          if (current > 0) countEl.textContent = current - 1;
+        }
+      }, 350);
+    }
+  } catch (err) {
+    toast(err.message || "Could not delete creation.");
+  }
 }
 
 async function likePost(id, button) {

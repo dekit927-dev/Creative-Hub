@@ -12,7 +12,7 @@ async function loadCreation() {
   const box = document.getElementById("details");
   try {
     const c = await api("/api/creations/" + creationId);
-    const isOwner = c.user.id === currentUser.id;
+    const isOwner = currentUser && (c.user.id === currentUser.id || currentUser.role === 'admin');
     const mediaType = getMediaType(c.image, c.category);
     let mediaHtml = '';
     if (mediaType === 'video') {
@@ -85,10 +85,13 @@ async function loadCreation() {
     const deleteBtn = document.getElementById("delete-btn");
     if (deleteBtn) {
       deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Delete this creation? This cannot be undone.")) return;
+        if (!confirm("Are you sure you want to delete this creation? This cannot be undone.")) return;
         try {
-          await api("/api/creations/" + c.id, { method: "DELETE" });
-          window.location.href = "home.html";
+          const res = await api("/api/creations/" + c.id, { method: "DELETE" });
+          toast(res && res.message ? res.message : "Creation deleted successfully.");
+          setTimeout(() => {
+            window.location.href = "home.html";
+          }, 600);
         } catch (error) { toast(error.message); }
       });
     }

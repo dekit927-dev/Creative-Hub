@@ -95,14 +95,16 @@ const CreationModel = {
     );
   },
 
-  async delete(id, userId) {
+  async delete(id, userId, isAdmin = false) {
     return db.tx(async t => {
       const creation = await t.oneOrNone('SELECT * FROM creations WHERE id = $1', [id]);
       if (!creation) return null;
-      if (creation.user_id !== userId) return false;
+      if (!isAdmin && creation.user_id !== userId) return false;
 
       await t.none('DELETE FROM likes WHERE creation_id = $1', [id]);
       await t.none('DELETE FROM comments WHERE creation_id = $1', [id]);
+      await t.none('DELETE FROM share_events WHERE creation_id = $1', [id]);
+      await t.none("DELETE FROM reports WHERE content_type = 'creation' AND content_id = $1", [id]);
       await t.none('DELETE FROM creations WHERE id = $1', [id]);
 
       return creation;

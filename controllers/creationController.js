@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const CreationModel = require('../models/creationModel');
 const CategoryModel = require('../models/categoryModel');
 const NotificationModel = require('../models/notificationModel');
@@ -93,12 +94,30 @@ const CreationController = {
         return res.status(404).json({ detail: 'This creation does not exist (it may have been deleted).' });
       }
 
-      if (existing.user.id !== req.user.id) {
+      const isOwner = existing.user && existing.user.id === req.user.id;
+      const isAdmin = req.user && req.user.role === 'admin';
+
+      if (!isOwner && !isAdmin) {
         return res.status(403).json({ detail: 'You can only delete your own creations.' });
       }
 
-      await CreationModel.delete(creationId, req.user.id);
-      res.json({ message: 'Creation deleted.' });
+      const deleted = await CreationModel.delete(creationId, req.user.id, isAdmin);
+      if (!deleted) {
+        return res.status(403).json({ detail: 'You can only delete your own creations.' });
+      }
+
+      if (existing.image) {
+        try {
+          const filePath = path.join(__dirname, '../public/uploads', existing.image);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (e) {
+          console.warn('Could not remove file for deleted creation:', e.message);
+        }
+      }
+
+      res.json({ message: 'Creation deleted successfully.' });
     } catch (err) {
       next(err);
     }

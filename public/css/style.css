@@ -1468,6 +1468,45 @@ label {
   font-weight: 700;
 }
 
+.action.action-delete {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.action.action-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #dc2626;
+}
+
+.post-delete-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.post-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
+  transform: translateY(-1px);
+}
+
+.post-delete-btn:active {
+  transform: scale(0.96);
+}
+
 /* ---------------- Chips (Edge-to-Edge Clean Horizontal Scroll) ---------------- */
 .chips {
   display: flex;
