@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const UserModel = require('../models/userModel');
 const NotificationModel = require('../models/notificationModel');
 const AuthController = require('./authController');
@@ -43,6 +46,28 @@ const UserController = {
       const updateData = { fullName, bio };
       if (req.file) {
         updateData.profilePicture = req.file.filename;
+        if (req.body.profile_picture_data && req.body.profile_picture_data.startsWith('data:image/')) {
+          updateData.profilePictureData = req.body.profile_picture_data;
+        } else {
+          try {
+            const buf = fs.readFileSync(req.file.path);
+            const mime = req.file.mimetype || 'image/jpeg';
+            updateData.profilePictureData = `data:${mime};base64,${buf.toString('base64')}`;
+          } catch (e) {
+            console.warn('[ProfilePic] Error reading file for DB backup:', e.message);
+          }
+        }
+      } else if (req.body.profile_picture_data && req.body.profile_picture_data.startsWith('data:image/')) {
+        const dataUri = req.body.profile_picture_data;
+        const ext = dataUri.includes('png') ? '.png' : (dataUri.includes('webp') ? '.webp' : '.jpg');
+        const filename = `${crypto.randomBytes(16).toString('hex')}${ext}`;
+        const filePath = path.join(__dirname, '../public/uploads', filename);
+        const base64Data = dataUri.replace(/^data:[^;]+;base64,/, '');
+        try {
+          fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+        } catch (e) {}
+        updateData.profilePicture = filename;
+        updateData.profilePictureData = dataUri;
       }
 
       await UserModel.updateProfile(userId, updateData);

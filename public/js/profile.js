@@ -122,6 +122,40 @@ async function loadCreations(userId) {
   }
 }
 
+// Downscale large avatar images client-side for fast uploads and permanent DB persistence
+function resizeImageToDataUrl(file, maxWidth = 600, maxHeight = 600, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (!file || !file.type.startsWith("image/")) return resolve(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => resolve(null);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
 // Cancel editing
 document.getElementById("cancel-edit").addEventListener("click", () => {
   document.getElementById("edit-card").classList.add("hidden");
@@ -144,7 +178,17 @@ document.getElementById("edit-form").addEventListener("submit", async (event) =>
   formData.append("full_name", name);
   formData.append("bio", document.getElementById("e-bio").value);
   const picture = document.getElementById("e-picture").files[0];
-  if (picture) formData.append("profile_picture", picture);
+  if (picture) {
+    formData.append("profile_picture", picture);
+    try {
+      const compressedData = await resizeImageToDataUrl(picture);
+      if (compressedData) {
+        formData.append("profile_picture_data", compressedData);
+      }
+    } catch (e) {
+      // fallback to file upload
+    }
+  }
 
   try {
     await api("/api/users/" + currentUser.id, { method: "PUT", body: formData });

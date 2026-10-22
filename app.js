@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 const session = require('express-session');
 const { Server } = require('socket.io');
@@ -47,6 +48,58 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+// Self-healing /uploads route: if an uploaded image was wiped from ephemeral container disk after restart,
+// dynamically restore it from PostgreSQL cloud database and re-write to disk so it never disappears!
+app.get('/uploads/:filename', async (req, res, next) => {
+  try {
+    const filename = path.basename(req.params.filename);
+    const filePath = path.join(__dirname, 'public/uploads', filename);
+
+    if (fs.existsSync(filePath)) {
+      return res.sendFile(filePath);
+    }
+
+    const { db } = require('./config/db');
+
+    // 1. Try finding in users profile_picture
+    const userRow = await db.oneOrNone(
+      'SELECT profile_picture_data FROM users WHERE profile_picture = $1',
+      [filename]
+    );
+
+    let dataUri = userRow ? userRow.profile_picture_data : null;
+
+    // 2. Try finding in creations image
+    if (!dataUri) {
+      const creationRow = await db.oneOrNone(
+        'SELECT image_data FROM creations WHERE image = $1',
+        [filename]
+      );
+      dataUri = creationRow ? creationRow.image_data : null;
+    }
+
+    if (dataUri && dataUri.startsWith('data:')) {
+      const matches = dataUri.match(/^data:([^;]+);base64,(.+)$/);
+      if (matches) {
+        const contentType = matches[1];
+        const buffer = Buffer.from(matches[2], 'base64');
+        try {
+          fs.writeFileSync(filePath, buffer);
+        } catch (e) {
+          // ignore disk write errors
+        }
+        res.type(contentType);
+        return res.send(buffer);
+      }
+    }
+  } catch (err) {
+    console.warn(`[SelfHealing] Failed to restore /uploads/${req.params.filename}:`, err.message);
+  }
+
+  next();
+});
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 

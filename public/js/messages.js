@@ -30,10 +30,10 @@ function getContactAccent(user) {
 
 // Renders an avatar with an accent ring in the contact's stable color
 function contactAvatar(user, accent, sizeClass = "") {
-  if (user.profile_picture) {
-    return `<img class="avatar ${sizeClass}" style="border: 2.5px solid ${accent.color};" src="${fileUrl(user.profile_picture)}" alt="${esc(user.full_name)}">`;
-  }
   const initials = (user.full_name || "U").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  if (user.profile_picture) {
+    return `<img class="avatar ${sizeClass}" style="border: 2.5px solid ${accent.color};" src="${fileUrl(user.profile_picture)}" alt="${esc(user.full_name)}" onerror="this.onerror=null; this.outerHTML='<span class=\\'avatar initials ${sizeClass}\\' style=\\'background:${accent.color}; color:#ffffff; border: 2.5px solid ${accent.border};\\'>${esc(initials)}</span>';">`;
+  }
   return `<span class="avatar initials ${sizeClass}" style="background:${accent.color}; color:#ffffff; border: 2.5px solid ${accent.border};">${esc(initials)}</span>`;
 }
 

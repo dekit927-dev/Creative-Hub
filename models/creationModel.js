@@ -86,12 +86,12 @@ const CreationModel = {
     };
   },
 
-  async create({ userId, title, description, category, image }) {
+  async create({ userId, title, description, category, image, imageData = null }) {
     return db.one(
-      `INSERT INTO creations (user_id, title, description, category, image)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO creations (user_id, title, description, category, image, image_data)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [userId, title, description, category, image]
+      [userId, title, description, category, image, imageData]
     );
   },
 

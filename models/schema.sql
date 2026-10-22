@@ -27,6 +27,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(128) DEFAU
 ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP WITH TIME ZONE DEFAULT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(128) DEFAULT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_data TEXT DEFAULT NULL;
+ALTER TABLE users ALTER COLUMN profile_picture TYPE TEXT;
 
 -- Ensure existing accounts created before verification or demo accounts are verified so users are not blocked
 UPDATE users SET email_verified = TRUE WHERE email_verified IS NULL OR email_verified = FALSE;
@@ -54,6 +56,9 @@ CREATE TABLE IF NOT EXISTS creations (
     image VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE creations ADD COLUMN IF NOT EXISTS image_data TEXT DEFAULT NULL;
+ALTER TABLE creations ALTER COLUMN image TYPE TEXT;
 
 CREATE TABLE IF NOT EXISTS likes (
     id SERIAL PRIMARY KEY,

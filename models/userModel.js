@@ -1,7 +1,14 @@
 const { db } = require('../config/db');
 
 function fileUrl(filename) {
-  return filename ? `/uploads/${filename}` : null;
+  if (!filename) return null;
+  if (filename.startsWith('http://') || filename.startsWith('https://') || filename.startsWith('data:')) {
+    return filename;
+  }
+  if (filename.startsWith('/uploads/')) {
+    return filename;
+  }
+  return `/uploads/${filename.replace(/^\/+/, '')}`;
 }
 
 function formatSmallUser(u) {
@@ -94,13 +101,18 @@ const UserModel = {
     return Promise.all(users.map(u => UserModel.getUserDetails(u.id, currentUserId)));
   },
 
-  async updateProfile(userId, { fullName, bio, profilePicture }) {
+  async updateProfile(userId, { fullName, bio, profilePicture, profilePictureData }) {
     let sql = 'UPDATE users SET full_name = $1, bio = $2';
     const params = [fullName, bio];
 
     if (profilePicture !== undefined) {
       params.push(profilePicture);
       sql += `, profile_picture = $${params.length}`;
+    }
+
+    if (profilePictureData !== undefined) {
+      params.push(profilePictureData);
+      sql += `, profile_picture_data = $${params.length}`;
     }
 
     params.push(userId);

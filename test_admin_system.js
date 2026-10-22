@@ -2,6 +2,8 @@
 // Tests all endpoints, PostgreSQL aggregations, RBAC, rankings, and moderation against real database
 
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const { app } = require('./app');
 const { db } = require('./config/db');
 const { seedDatabase } = require('./config/seed');
@@ -130,6 +132,32 @@ async function runTests() {
     const instantVerifyRes = await request('POST', '/api/instant-verify', {}, { email: instantStudentEmail });
     assert(instantVerifyRes.status === 200 && instantVerifyRes.data.verified && instantVerifyRes.data.token,
       'Instant verification activates unverified user and generates session token immediately');
+
+    // 2.1g Profile picture persistence and ephemeral disk recovery test
+    const dummyAvatarBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    const profileUpdateRes = await request('PUT', `/api/users/${instantVerifyRes.data.user.id}`, {
+      'Authorization': `Bearer ${instantVerifyRes.data.token}`
+    }, {
+      full_name: 'Instant Creator Updated',
+      bio: 'Persistence test bio',
+      profile_picture_data: dummyAvatarBase64
+    });
+    assert(profileUpdateRes.status === 200 && profileUpdateRes.data.profile_picture,
+      'User can update profile picture with persistent data');
+
+    const picFilename = path.basename(profileUpdateRes.data.profile_picture);
+    const picDiskPath = path.join(__dirname, 'public/uploads', picFilename);
+
+    // Simulate Render container restart by deleting file from ephemeral disk
+    if (fs.existsSync(picDiskPath)) {
+      fs.unlinkSync(picDiskPath);
+    }
+    assert(!fs.existsSync(picDiskPath), 'File successfully wiped from ephemeral disk');
+
+    // Self-healing /uploads/ route dynamically restores file from PostgreSQL
+    const picFetchRes = await request('GET', `/uploads/${picFilename}`);
+    assert(picFetchRes.status === 200, 'Self-healing /uploads route restores profile picture after container restart');
+    assert(fs.existsSync(picDiskPath), 'Restored profile picture re-created on disk for fast subsequent loads');
 
     // 2.2 Student login (role = user)
     const studentLogin = await request('POST', '/api/login', {}, {

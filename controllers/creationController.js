@@ -51,12 +51,24 @@ const CreationController = {
         return res.status(400).json({ detail: 'Photo size cannot exceed 15 MB.' });
       }
 
+      let imageData = null;
+      if (!isVideo && !isAudio && req.file && req.file.size <= 15 * 1024 * 1024) {
+        try {
+          const buf = fs.readFileSync(req.file.path);
+          const mime = req.file.mimetype || 'image/jpeg';
+          imageData = `data:${mime};base64,${buf.toString('base64')}`;
+        } catch (e) {
+          console.warn('[Creation] Error reading image for DB backup:', e.message);
+        }
+      }
+
       const creation = await CreationModel.create({
         userId: req.user.id,
         title,
         description,
         category,
-        image: req.file.filename
+        image: req.file.filename,
+        imageData
       });
 
       const fullCreation = await CreationModel.getById(creation.id, req.user.id);
