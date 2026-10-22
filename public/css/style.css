@@ -152,6 +152,7 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 [data-theme="dark"] body {
@@ -504,53 +505,302 @@ img {
   font-size: 0.78rem;
 }
 
-/* Responsive Navbar Adjustments */
-@media (max-width: 1140px) {
+/* ================= RESPONSIVE NAVIGATION SYSTEM (MOBILE, TABLET, LAPTOP, DESKTOP) ================= */
+
+/* Default State for Mobile-Specific Elements */
+.mobile-bottom-bar {
+  display: none !important;
+}
+
+.nav-search-icon-btn {
+  display: none !important;
+}
+
+/* 1. Laptops & Compact Desktops (901px to 1180px) */
+@media (max-width: 1180px) {
   .nav-inner {
-    padding: 8px 16px;
-    gap: 10px;
+    padding: 8px 14px;
+    gap: 8px;
+  }
+  .nav-links {
+    gap: 2px;
   }
   .nav-links a {
-    padding: 5px 9px;
-    font-size: 0.84rem;
+    padding: 5px 8px;
+    font-size: 0.82rem;
   }
   .search-form {
-    max-width: 170px;
+    max-width: 180px;
+    min-width: 120px;
+  }
+  .search-form input {
+    padding: 6px 12px;
+    font-size: 0.82rem;
   }
   .nav-right {
     gap: 8px;
   }
   .nav-right .btn {
-    padding: 5px 11px;
+    padding: 5px 12px;
     font-size: 0.82rem;
   }
 }
 
-@media (max-width: 960px) {
-  .nav-links a {
-    padding: 4px 7px;
-    font-size: 0.81rem;
+/* 2. Tablets & Mobile Phones (<= 900px) */
+@media (max-width: 900px) {
+  /* Provide space so bottom navigation bar never covers page content */
+  body {
+    padding-bottom: 74px !important;
+  }
+
+  /* Clean up top navbar: Hide bulky horizontal link row & full input */
+  .nav-links {
+    display: none !important;
   }
   .search-form {
-    max-width: 130px;
-    min-width: 90px;
+    display: none !important;
   }
-  .search-form input {
-    padding: 6px 12px;
-    font-size: 0.8rem;
+
+  /* Show dedicated search icon button in top bar */
+  .nav-search-icon-btn {
+    display: inline-grid !important;
+  }
+
+  /* Compact top bar padding */
+  .nav-inner {
+    padding: 8px 14px;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .nav-right {
+    gap: 8px;
+  }
+
+  /* Hide textual "Settings" label next to the gear icon */
+  .settings-text {
+    display: none !important;
+  }
+
+  /* ---------------- Native App-Style Frosted Glass Bottom Navigation Bar ---------------- */
+  .mobile-bottom-bar {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(10, 20, 38, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.45);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  [data-theme="light"] .mobile-bottom-bar {
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid rgba(226, 232, 240, 0.95);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .mobile-bottom-inner {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+    height: 60px;
+    padding: 0 4px;
+  }
+
+  .mobile-tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    text-decoration: none;
+    color: rgba(248, 250, 252, 0.65);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 8px;
+    padding: 3px 0;
+    min-width: 0;
+  }
+
+  [data-theme="light"] .mobile-tab-item {
+    color: #64748B;
+  }
+
+  .mobile-tab-item:hover,
+  .mobile-tab-item:active {
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+
+  [data-theme="light"] .mobile-tab-item:hover,
+  [data-theme="light"] .mobile-tab-item:active {
+    color: #1E3A8A;
+    text-decoration: none;
+  }
+
+  .mobile-tab-item.active {
+    color: #60A5FA !important;
+    font-weight: 700;
+  }
+
+  [data-theme="light"] .mobile-tab-item.active {
+    color: #2563EB !important;
+  }
+
+  .mobile-tab-icon {
+    font-size: 1.25rem;
+    line-height: 1.2;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-tab-item.active .mobile-tab-icon {
+    transform: translateY(-2px) scale(1.12);
+    filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.65));
+  }
+
+  .mobile-tab-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    margin-top: 2px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
+  }
+
+  /* Responsive Grid Adjustments for Tablets */
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  /* Category Chips Touch Horizontal Scroll */
+  .chips {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-radius: 14px;
+    padding: 8px 10px;
+  }
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    padding: 6px 14px;
   }
 }
 
-@media (max-width: 768px) {
+/* 3. Small Phones (< 480px) */
+@media (max-width: 480px) {
+  /* Hide the text "Creative Hub" so only [C] mark shows on very small screens */
+  .logo-text {
+    display: none !important;
+  }
+
   .nav-inner {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding: 8px 12px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .nav-right {
+    gap: 6px;
+  }
+
+  .nav-right .btn {
+    padding: 5px 9px;
+    font-size: 0.78rem;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+
+  .nav-right .avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Single Column Feed Grid */
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+
+  .container {
+    padding: 16px 12px 64px;
+  }
+
+  .page-title {
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 10px;
   }
-  .nav-inner::-webkit-scrollbar {
-    display: none;
+
+  .page-title h1 {
+    font-size: 1.45rem;
+  }
+
+  /* Hero Section scaling */
+  .home-hero-content {
+    padding: 42px 16px;
+  }
+  .hero-title {
+    font-size: 1.85rem !important;
+    line-height: 1.2;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Creation Details Single Column */
+  .details {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+
+  /* Toast notification centered on mobile */
+  .toast {
+    width: calc(100vw - 32px);
+    max-width: 360px;
+    text-align: center;
+    justify-content: center;
+    bottom: 74px;
+  }
+
+  /* Compact Auth Wrap on Small Phones */
+  .auth-wrap {
+    padding: 16px 12px;
+  }
+  .auth-card {
+    padding: 24px 18px;
   }
 }
 
@@ -2206,13 +2456,6 @@ label {
   .chat-messages {
     min-height: 300px;
     max-height: 55vh;
-  }
-
-  .search-form {
-    max-width: none;
-    order: 5;
-    flex-basis: 100%;
-    margin-left: 0;
   }
 
   .hero h1 {

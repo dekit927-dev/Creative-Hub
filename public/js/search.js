@@ -3,7 +3,18 @@
   await initPage("");
   const q = (getParam("q") || "").trim();
   document.getElementById("search-title").textContent = q ? `Results for "${q}"` : "Search";
-  if (!q) return showMessage("message", "Type something in the search bar to find people, creations, or categories.");
+  const pageSearchInput = document.getElementById("page-search-input");
+  const pageSearchForm = document.getElementById("page-search-form");
+  if (pageSearchInput) pageSearchInput.value = q;
+  if (pageSearchForm) {
+    pageSearchForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = pageSearchInput.value.trim();
+      if (val) window.location.href = "search.html?q=" + encodeURIComponent(val);
+    });
+  }
+
+  if (!q) return showMessage("message", "Type a name, keyword, or topic above to discover creators and creations.", "info");
 
   const resultsContainer = document.getElementById("results");
   resultsContainer.innerHTML = `<div class="loading-box"><div class="spinner-ring"></div><span>Searching Creative Hub...</span></div>`;

@@ -131,28 +131,59 @@ async function initPage(activeLink) {
 }
 
 function renderNavbar(activeLink) {
-  const links = [["home.html", "Home"], ["challenges.html", "Challenges"], ["connect.html", "Connect"],
-                 ["collaboration.html", "Collaborate"], ["messages.html", "Messages"]];
-  const linkHtml = links.map(([href, name]) =>
-    `<a href="${href}" class="${activeLink === href ? "active" : ""}">${name}</a>`).join("");
+  const links = [
+    { href: "home.html", name: "Home", icon: "&#127968;" },
+    { href: "challenges.html", name: "Challenges", icon: "&#127942;" },
+    { href: "connect.html", name: "Connect", icon: "&#128101;" },
+    { href: "collaboration.html", name: "Collaborate", icon: "&#129309;" },
+    { href: "messages.html", name: "Messages", icon: "&#128172;" }
+  ];
+
+  const linkHtml = links.map(l =>
+    `<a href="${l.href}" class="${activeLink === l.href ? "active" : ""}">${l.name}</a>`).join("");
+
+  const bottomTabsHtml = links.map(l => `
+    <a href="${l.href}" class="mobile-tab-item ${activeLink === l.href ? "active" : ""}">
+      <span class="mobile-tab-icon">${l.icon}</span>
+      <span class="mobile-tab-label">${l.name}</span>
+    </a>
+  `).join("");
+
   document.getElementById("navbar").innerHTML = `
     <nav class="navbar"><div class="nav-inner">
-      <a class="logo" href="home.html"><span class="logo-mark">C</span>Creative Hub</a>
+      <a class="logo" href="home.html">
+        <span class="logo-mark">C</span>
+        <span class="logo-text">Creative Hub</span>
+      </a>
+
+      <!-- Desktop & Laptop Nav Links -->
       <div class="nav-links">${linkHtml}</div>
+
+      <!-- Desktop & Laptop Search Form -->
       <form class="search-form" id="search-form">
-        <input type="search" id="search-input" placeholder="Search people, posts, categories" value="${esc(getParam("q") || "")}">
+        <input type="search" id="search-input" placeholder="Search people, posts, categories" value="${esc(getParam("q") || "")}" autocomplete="off">
       </form>
+
+      <!-- Action items -->
       <div class="nav-right">
-        ${currentUser && currentUser.role === "admin" ? `<a class="btn small secondary" href="/admin" style="font-weight:700">Admin</a>` : ""}
-        <a class="btn small" href="create.html">+ Create</a>
+        <a class="icon-btn nav-search-icon-btn" href="search.html" title="Search" aria-label="Search">&#128269;</a>
+        ${currentUser && currentUser.role === "admin" ? `<a class="btn small secondary nav-admin-btn" href="/admin" style="font-weight:700">Admin</a>` : ""}
+        <a class="btn small nav-create-btn" href="create.html">+ Create</a>
         <div class="dropdown-wrap">
           <button class="icon-btn" id="bell-btn" title="Notifications" aria-label="Notifications">&#128276;<span class="badge hidden" id="bell-badge">0</span></button>
           <div class="dropdown hidden" id="notif-panel"></div>
         </div>
-        <a href="profile.html" title="My profile">${avatar(currentUser)}</a>
-        <a href="settings.html" class="muted nav-settings-link" title="Settings" style="font-weight:600">Settings</a>
+        <a href="profile.html" title="My profile" class="nav-avatar-link">${avatar(currentUser)}</a>
+        <a href="settings.html" class="muted nav-settings-link" title="Settings">&#9881;<span class="settings-text"> Settings</span></a>
       </div>
-    </div></nav>`;
+    </div></nav>
+
+    <!-- Mobile Bottom Navigation Bar (Phones & Tabs <= 900px) -->
+    <nav class="mobile-bottom-bar" aria-label="Mobile Navigation">
+      <div class="mobile-bottom-inner">
+        ${bottomTabsHtml}
+      </div>
+    </nav>`;
 
   document.getElementById("search-form").addEventListener("submit", (event) => {
     event.preventDefault();
