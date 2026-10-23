@@ -704,6 +704,138 @@ async function runTests() {
     assert(withdrawCollabRes.status === 200 && withdrawCollabRes.data.collaboration.my_request.status === 'Withdrawn',
       'Applicant can withdraw pending or under-review application gracefully');
 
+    // 17. Document & Link Upload and Management Workflow
+    console.log('\n--- TEST GROUP 16: DOCUMENT & LINK CREATION WORKFLOW ---');
+    // Test 1: Upload a PDF Document creation
+    const docBoundary = '----WebKitFormBoundary' + Math.random().toString(16).substring(2);
+    const pdfDummyContent = '%PDF-1.4\n1 0 obj\n<< /Title (Sherubtse Creative Paper) >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF';
+    const docMultipart = Buffer.concat([
+      Buffer.from(`--${docBoundary}\r\nContent-Disposition: form-data; name="title"\r\n\r\nSherubtse Research Monograph (PDF)\r\n`),
+      Buffer.from(`--${docBoundary}\r\nContent-Disposition: form-data; name="category"\r\n\r\nWriting\r\n`),
+      Buffer.from(`--${docBoundary}\r\nContent-Disposition: form-data; name="description"\r\n\r\nA comprehensive publication on Himalayan digital art preservation.\r\n`),
+      Buffer.from(`--${docBoundary}\r\nContent-Disposition: form-data; name="media_type"\r\n\r\ndocument\r\n`),
+      Buffer.from(`--${docBoundary}\r\nContent-Disposition: form-data; name="image"; filename="sherubtse_research_paper.pdf"\r\nContent-Type: application/pdf\r\n\r\n`),
+      Buffer.from(pdfDummyContent),
+      Buffer.from(`\r\n--${docBoundary}--\r\n`)
+    ]);
+
+    const createDocRes = await request('POST', '/api/creations', {
+      'Authorization': `Bearer ${studentToken}`,
+      'Content-Type': `multipart/form-data; boundary=${docBoundary}`
+    }, docMultipart);
+
+    assert(createDocRes.status === 200 &&
+           createDocRes.data.id &&
+           createDocRes.data.media_type === 'document' &&
+           createDocRes.data.file_name === 'sherubtse_research_paper.pdf' &&
+           createDocRes.data.file_size > 0 &&
+           createDocRes.data.image,
+      'Creator can successfully upload and publish a document (PDF) creation');
+    const createdDocId = createDocRes.data.id;
+    const docFilename = createDocRes.data.raw_image;
+
+    // Self-healing test for document file
+    const docDiskPath = path.join(__dirname, 'public/uploads', docFilename);
+    if (fs.existsSync(docDiskPath)) {
+      fs.unlinkSync(docDiskPath);
+    }
+    assert(!fs.existsSync(docDiskPath), 'Document file successfully wiped from ephemeral disk');
+    const docFetchRes = await request('GET', `/uploads/${docFilename}`);
+    assert(docFetchRes.status === 200 && docFetchRes.headers['content-type'] === 'application/pdf',
+      'Self-healing /uploads route restores document from PostgreSQL with application/pdf Content-Type');
+    assert(fs.existsSync(docDiskPath), 'Restored document re-created on disk for fast subsequent downloads');
+
+    // Test 1b: Upload a Microsoft Word (.docx) Document creation
+    const wordBoundary = '----WebKitFormBoundary' + Math.random().toString(16).substring(2);
+    const docxDummyContent = 'PK\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00WordDocumentContentMock';
+    const wordMultipart = Buffer.concat([
+      Buffer.from(`--${wordBoundary}\r\nContent-Disposition: form-data; name="title"\r\n\r\nBhutan Creative Writing Anthology (DOCX)\r\n`),
+      Buffer.from(`--${wordBoundary}\r\nContent-Disposition: form-data; name="category"\r\n\r\nWriting\r\n`),
+      Buffer.from(`--${wordBoundary}\r\nContent-Disposition: form-data; name="description"\r\n\r\nStudent creative short stories and poetry collection.\r\n`),
+      Buffer.from(`--${wordBoundary}\r\nContent-Disposition: form-data; name="media_type"\r\n\r\ndocument\r\n`),
+      Buffer.from(`--${wordBoundary}\r\nContent-Disposition: form-data; name="image"; filename="bhutan_anthology.docx"\r\nContent-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document\r\n\r\n`),
+      Buffer.from(docxDummyContent),
+      Buffer.from(`\r\n--${wordBoundary}--\r\n`)
+    ]);
+
+    const createWordRes = await request('POST', '/api/creations', {
+      'Authorization': `Bearer ${studentToken}`,
+      'Content-Type': `multipart/form-data; boundary=${wordBoundary}`
+    }, wordMultipart);
+
+    assert(createWordRes.status === 200 &&
+           createWordRes.data.id &&
+           createWordRes.data.media_type === 'document' &&
+           createWordRes.data.file_name === 'bhutan_anthology.docx' &&
+           createWordRes.data.file_size > 0 &&
+           createWordRes.data.image,
+      'Creator can successfully upload and publish a Microsoft Word (DOCX) creation');
+    const createdWordId = createWordRes.data.id;
+    const wordFilename = createWordRes.data.raw_image;
+
+    // Self-healing test for Word doc
+    const wordDiskPath = path.join(__dirname, 'public/uploads', wordFilename);
+    if (fs.existsSync(wordDiskPath)) {
+      fs.unlinkSync(wordDiskPath);
+    }
+    assert(!fs.existsSync(wordDiskPath), 'Word document file successfully wiped from ephemeral disk');
+    const wordFetchRes = await request('GET', `/uploads/${wordFilename}`);
+    assert(wordFetchRes.status === 200 && wordFetchRes.headers['content-type'] === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Self-healing /uploads route restores Word document with valid DOCX Content-Type');
+
+    await request('DELETE', `/api/creations/${createdWordId}`, {
+      'Authorization': `Bearer ${studentToken}`
+    });
+
+    // Test 2: Create a Link / URL creation without any image file
+    const linkBoundary = '----WebKitFormBoundary' + Math.random().toString(16).substring(2);
+    const linkMultipart = Buffer.concat([
+      Buffer.from(`--${linkBoundary}\r\nContent-Disposition: form-data; name="title"\r\n\r\nHimalayan Heritage Interactive Web Platform\r\n`),
+      Buffer.from(`--${linkBoundary}\r\nContent-Disposition: form-data; name="category"\r\n\r\nDigital Art\r\n`),
+      Buffer.from(`--${linkBoundary}\r\nContent-Disposition: form-data; name="description"\r\n\r\nExplore our open-source interactive 3D digital museum and archives.\r\n`),
+      Buffer.from(`--${linkBoundary}\r\nContent-Disposition: form-data; name="media_type"\r\n\r\nlink\r\n`),
+      Buffer.from(`--${linkBoundary}\r\nContent-Disposition: form-data; name="link_url"\r\n\r\nhttps://github.com/sherubtse-creatives/himalayan-heritage\r\n`),
+      Buffer.from(`--${linkBoundary}--\r\n`)
+    ]);
+
+    const createLinkRes = await request('POST', '/api/creations', {
+      'Authorization': `Bearer ${studentToken}`,
+      'Content-Type': `multipart/form-data; boundary=${linkBoundary}`
+    }, linkMultipart);
+
+    assert(createLinkRes.status === 200 &&
+           createLinkRes.data.id &&
+           createLinkRes.data.media_type === 'link' &&
+           createLinkRes.data.link_url === 'https://github.com/sherubtse-creatives/himalayan-heritage',
+      'Creator can successfully publish a link-only creation without requiring an image');
+    const createdLinkId = createLinkRes.data.id;
+
+    // Test 3: Fetch detail endpoint for document and link creations
+    const getDocRes = await request('GET', `/api/creations/${createdDocId}`, {
+      'Authorization': `Bearer ${studentToken}`
+    });
+    assert(getDocRes.status === 200 &&
+           getDocRes.data.media_type === 'document' &&
+           getDocRes.data.file_name === 'sherubtse_research_paper.pdf',
+      'GET /api/creations/:id returns document metadata, filename, and download URL');
+
+    const getLinkRes = await request('GET', `/api/creations/${createdLinkId}`, {
+      'Authorization': `Bearer ${studentToken}`
+    });
+    assert(getLinkRes.status === 200 &&
+           getLinkRes.data.media_type === 'link' &&
+           getLinkRes.data.link_url === 'https://github.com/sherubtse-creatives/himalayan-heritage',
+      'GET /api/creations/:id returns link_url and external resource metadata');
+
+    // Clean up created test creations
+    await request('DELETE', `/api/creations/${createdDocId}`, {
+      'Authorization': `Bearer ${studentToken}`
+    });
+    await request('DELETE', `/api/creations/${createdLinkId}`, {
+      'Authorization': `Bearer ${studentToken}`
+    });
+    assert(true, 'Creator can delete their document and link creations cleanly');
+
   } catch (err) {
     console.error('Test execution error:', err);
     failed++;

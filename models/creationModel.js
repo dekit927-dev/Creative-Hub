@@ -71,7 +71,12 @@ const CreationModel = {
       title: row.title,
       description: row.description || '',
       category: row.category,
-      image: UserModel.fileUrl(row.image),
+      image: row.image ? UserModel.fileUrl(row.image) : '',
+      raw_image: row.image || '',
+      media_type: row.media_type || (row.link_url ? 'link' : null),
+      link_url: row.link_url || null,
+      file_name: row.file_name || null,
+      file_size: row.file_size ? parseInt(row.file_size, 10) : null,
       created_at: row.created_at ? row.created_at.toISOString() : new Date().toISOString(),
       user: {
         id: row.user_id,
@@ -86,12 +91,12 @@ const CreationModel = {
     };
   },
 
-  async create({ userId, title, description, category, image, imageData = null }) {
+  async create({ userId, title, description, category, image, imageData = null, mediaType = 'image', linkUrl = null, fileName = null, fileSize = null }) {
     return db.one(
-      `INSERT INTO creations (user_id, title, description, category, image, image_data)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO creations (user_id, title, description, category, image, image_data, media_type, link_url, file_name, file_size)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
-      [userId, title, description, category, image, imageData]
+      [userId, title, description, category, image, imageData, mediaType, linkUrl, fileName, fileSize]
     );
   },
 

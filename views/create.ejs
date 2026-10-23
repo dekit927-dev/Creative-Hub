@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Create - Creative Hub</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261023_02">
 </head>
 <body>
   <div id="navbar"></div>
@@ -26,10 +29,18 @@
           <option value="image" selected>Photo / Image (JPG, PNG, GIF, WEBP)</option>
           <option value="video">Video (MP4, WebM, MOV, MKV)</option>
           <option value="audio">Audio (MP3, WAV, OGG, M4A)</option>
+          <option value="document">Document (PDF, Word DOC/DOCX, TXT, etc.)</option>
+          <option value="link">Link / URL (Website, Project, Portfolio)</option>
         </select>
 
-        <label for="image" id="file-label">Choose File (Photo, Video, or Audio)</label>
-        <input type="file" id="image" accept="image/*,video/*,audio/*,.mp4,.webm,.mov,.mkv,.ogv,.avi,.mp3,.wav,.ogg,.m4a,.jpg,.jpeg,.png,.gif,.webp">
+        <div id="link-field-wrap" class="hidden" style="margin-bottom:14px;">
+          <label for="link-url">Resource / Project Link <span style="color:var(--blue-primary); font-weight:700;">*</span></label>
+          <input type="url" id="link-url" placeholder="https://example.com/my-project-or-portfolio">
+          <small class="muted" style="display:block; margin-top:4px;">Paste any external link (e.g. Behance, GitHub, Google Drive, Figma, Personal Website, Notion, Article)</small>
+        </div>
+
+        <label for="image" id="file-label">Choose File (Photo, Video, Audio, or Document)</label>
+        <input type="file" id="image" accept="image/*,video/*,audio/*,.mp4,.webm,.mov,.mkv,.ogv,.avi,.mp3,.wav,.ogg,.m4a,.jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.rtf,.odt,.zip,.ppt,.pptx,.xls,.xlsx,.csv">
 
         <!-- Live Preview Container -->
         <div id="preview-wrap" class="hidden" style="margin-top:14px; border-radius:12px; overflow:hidden; background:var(--blue-pale); border:1px solid var(--blue-border); padding:12px;">
@@ -40,6 +51,28 @@
           <img id="preview-img" class="hidden" style="width:100%; max-height:360px; object-fit:contain; border-radius:8px; display:block;" alt="Photo preview">
           <video id="preview-video" class="hidden" style="width:100%; max-height:360px; border-radius:8px; display:block;" controls playsinline></video>
           <audio id="preview-audio" class="hidden" style="width:100%; margin-top:6px; display:block;" controls></audio>
+          
+          <!-- Document Preview -->
+          <div id="preview-doc" class="hidden post-doc-preview-card" style="padding:16px; border-radius:10px; background:var(--card-bg, #fff); border:1px solid var(--blue-border); display:flex; align-items:center; gap:14px;">
+            <div id="preview-doc-icon" class="doc-icon-badge" style="width:48px; height:48px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; color:#fff; background:var(--blue-primary); flex-shrink:0;">
+              DOC
+            </div>
+            <div style="flex:1; min-width:0;">
+              <strong id="preview-doc-name" style="display:block; font-size:0.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">document.pdf</strong>
+              <span id="preview-doc-info" class="muted" style="font-size:0.8rem;">Document</span>
+            </div>
+          </div>
+
+          <!-- Link Preview -->
+          <div id="preview-link" class="hidden post-link-preview-card" style="padding:14px 16px; border-radius:10px; background:var(--card-bg, #fff); border:1px solid var(--blue-border); display:flex; align-items:center; gap:12px;">
+            <div style="width:42px; height:42px; border-radius:8px; background:rgba(37,99,235,0.1); color:var(--blue-primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <strong id="preview-link-domain" style="display:block; font-size:0.9rem; color:var(--blue-primary);">example.com</strong>
+              <span id="preview-link-url" class="muted" style="font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block;">https://example.com</span>
+            </div>
+          </div>
         </div>
 
         <button class="btn full" type="submit" id="submit-btn" style="margin-top:20px;">Create</button>
@@ -47,7 +80,7 @@
     </div>
   </main>
   <div id="footer"></div>
-  <script src="js/main.js"></script>
-  <script src="js/create.js"></script>
+  <script src="js/main.js?v=20261023_02"></script>
+  <script src="js/create.js?v=20261023_02"></script>
 </body>
 </html>

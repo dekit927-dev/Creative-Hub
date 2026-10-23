@@ -28,18 +28,18 @@ const fileFilter = (req, file, cb) => {
     // Audio
     '.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac',
     // Documents
-    '.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.zip'
+    '.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.zip', '.ppt', '.pptx', '.xls', '.xlsx', '.csv'
   ];
   const ext = path.extname(file.originalname).toLowerCase();
   const isImage = file.mimetype.startsWith('image/') || ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext);
   const isVideo = file.mimetype.startsWith('video/') || ['.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi'].includes(ext);
   const isAudio = file.mimetype.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'].includes(ext);
-  const isDoc = file.mimetype.startsWith('application/') || file.mimetype.startsWith('text/') || ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.zip'].includes(ext);
+  const isDoc = file.mimetype.startsWith('application/') || file.mimetype.startsWith('text/') || ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.zip', '.ppt', '.pptx', '.xls', '.xlsx', '.csv'].includes(ext);
 
-  if (allowedExtensions.includes(ext) && (isImage || isVideo || isAudio || isDoc)) {
+  if (allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Please upload a photo (JPG, PNG, GIF, WEBP), audio (MP3, WAV, OGG), document (PDF, DOC, DOCX, TXT), or video file.'), false);
+    cb(new Error('Invalid file type. Please upload a photo (JPG, PNG, GIF, WEBP), video, audio (MP3, WAV), or document (PDF, DOC, DOCX, TXT, PPT, XLS).'), false);
   }
 };
 

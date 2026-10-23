@@ -6,7 +6,36 @@
   <title>Profile - Creative Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <style>
+    .profile-avatar-wrap {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 118px !important;
+      height: 118px !important;
+      border-radius: 50% !important;
+      padding: 4px !important;
+      box-sizing: border-box !important;
+      background: #FFFFFF !important;
+      box-shadow: 0 0 0 3px var(--blue-primary), 0 8px 24px rgba(30, 58, 138, 0.2) !important;
+    }
+    .profile-avatar-wrap .avatar.big,
+    .avatar.initials.big {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      line-height: 1 !important;
+      width: 110px !important;
+      height: 110px !important;
+      border-radius: 50% !important;
+      font-size: 2.2rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.02em !important;
+      box-sizing: border-box !important;
+    }
+  </style>
 </head>
 <body class="profile-page-body">
   <div id="navbar"></div>
@@ -54,7 +83,7 @@
     </main>
   </div>
   <div id="footer"></div>
-  <script src="js/main.js"></script>
-  <script src="js/profile.js"></script>
+  <script src="/js/main.js?v=3"></script>
+  <script src="/js/profile.js?v=3"></script>
 </body>
 </html>

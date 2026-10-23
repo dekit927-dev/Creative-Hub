@@ -1164,14 +1164,21 @@ html {
 }
 
 .avatar.initials {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
   background: var(--blue-primary);
   color: #fff;
   font-weight: 700;
   font-family: "Manrope", sans-serif;
   font-size: 0.85rem;
   border-radius: 50%;
+  user-select: none;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .avatar.big {
@@ -1858,6 +1865,41 @@ label {
   z-index: 2;
 }
 
+.media-type-badge.video-badge {
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.media-type-badge.audio-badge {
+  background: rgba(37, 99, 235, 0.9);
+}
+
+.media-type-badge.doc-badge {
+  background: rgba(37, 99, 235, 0.88);
+}
+
+.media-type-badge.link-badge {
+  background: rgba(16, 185, 129, 0.9);
+}
+
+.post-media-container.doc-container,
+.post-media-container.link-container {
+  background: var(--card);
+}
+
+[data-theme="dark"] .post-doc-preview-card,
+[data-theme="dark"] .post-link-preview-card {
+  background: var(--card) !important;
+  border-color: var(--card-border) !important;
+}
+
+[data-theme="dark"] .details-doc-container,
+[data-theme="dark"] .details-link-container,
+[data-theme="dark"] .post-media-container.doc-container,
+[data-theme="dark"] .post-media-container.link-container {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border-color: rgba(148, 163, 184, 0.15) !important;
+}
+
 .details-audio-container {
   padding: 30px 24px;
   background: linear-gradient(135deg, var(--blue-pale) 0%, var(--card) 100%);
@@ -1963,13 +2005,32 @@ label {
   padding: 4px;
   background: #FFFFFF;
   box-shadow: 0 0 0 3px var(--blue-primary), 0 8px 24px rgba(30, 58, 138, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .profile-avatar-wrap .avatar.big {
   width: 110px;
   height: 110px;
   border-radius: 50%;
+}
+
+.profile-avatar-wrap img.avatar.big {
   display: block;
+  object-fit: cover;
+}
+
+.profile-avatar-wrap .avatar.initials.big {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1 !important;
+  letter-spacing: 0;
 }
 
 .profile-badges-row {

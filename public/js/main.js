@@ -143,13 +143,17 @@ function getParam(name) {
 }
 
 function avatar(user, extraClass = "") {
-  if (!user) return `<span class="avatar initials ${extraClass}">?</span>`;
+  const isBig = extraClass && extraClass.includes("big");
+  const sizeStyles = isBig ? "width:110px !important; height:110px !important; font-size:2.2rem !important; font-weight:700 !important;" : "";
+  const baseStyles = `display:inline-flex !important; align-items:center !important; justify-content:center !important; text-align:center !important; line-height:1 !important; border-radius:50% !important; box-sizing:border-box !important; ${sizeStyles}`;
+
+  if (!user) return `<span class="avatar initials ${extraClass}" style="${baseStyles}">?</span>`;
   const fullName = user.full_name || user.name || user.username || "User";
-  const initials = fullName.split(" ").filter(Boolean).map(w => w[0]).slice(0, 2).join("").toUpperCase() || "U";
-  if (user.profile_picture) {
-    return `<img class="avatar ${extraClass}" src="${fileUrl(user.profile_picture)}" alt="${esc(fullName)}" onerror="this.onerror=null; this.outerHTML='<span class=\\'avatar initials ${extraClass}\\'>${esc(initials)}</span>';">`;
+  const initials = fullName.split(" ").filter(Boolean).map(w => w[0]).slice(0, 2).join("").toUpperCase() || (fullName.trim()[0] || "U").toUpperCase();
+  if (user.profile_picture && String(user.profile_picture).trim() && user.profile_picture !== "null" && user.profile_picture !== "undefined") {
+    return `<img class="avatar ${extraClass}" src="${fileUrl(user.profile_picture)}" alt="${esc(fullName)}" onerror="this.onerror=null; this.outerHTML='<span class=\\'avatar initials ${extraClass}\\' style=\\'${baseStyles}\\'>${esc(initials)}</span>';">`;
   }
-  return `<span class="avatar initials ${extraClass}">${esc(initials)}</span>`;
+  return `<span class="avatar initials ${extraClass}" style="${baseStyles}">${esc(initials)}</span>`;
 }
 
 function showMessage(elementId, text, type = "error") {
@@ -493,14 +497,23 @@ async function loadNotifications() {
 }
 
 // ---------- post cards (used on Home, Profile and Search) ----------
-function getMediaType(filename) {
-  if (!filename) return "image";
+function getMediaType(filename, postOrCategory = null) {
+  if (postOrCategory && typeof postOrCategory === 'object') {
+    if (postOrCategory.media_type) return postOrCategory.media_type;
+    if (postOrCategory.link_url) return 'link';
+  }
+  if (!filename) {
+    if (postOrCategory && typeof postOrCategory === 'object' && postOrCategory.link_url) return 'link';
+    return "image";
+  }
   const clean = filename.split("?")[0].split("#")[0];
   const ext = clean.split(".").pop().toLowerCase();
   const videoExts = ["mp4", "webm", "mov", "mkv", "ogv", "avi", "m4v"];
   const audioExts = ["mp3", "wav", "ogg", "m4a", "aac", "flac"];
+  const docExts = ["pdf", "doc", "docx", "txt", "rtf", "odt", "ppt", "pptx", "xls", "xlsx", "zip", "csv"];
   if (videoExts.includes(ext)) return "video";
   if (audioExts.includes(ext)) return "audio";
+  if (docExts.includes(ext)) return "document";
   return "image";
 }
 
@@ -533,8 +546,8 @@ function handleVideoError(videoEl, src, title) {
 }
 
 function renderPostMedia(post) {
-  const type = getMediaType(post.image);
-  const src = fileUrl(post.image);
+  const type = getMediaType(post.image, post);
+  const src = post.image ? fileUrl(post.image) : "";
 
   if (type === "video") {
     return `
@@ -565,11 +578,95 @@ function renderPostMedia(post) {
               <span class="audio-card-artist">${esc(post.user.full_name)}</span>
             </div>
             <span class="media-type-badge audio-badge" style="position:static;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+              <svg width="12" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
               Audio
             </span>
           </div>
           <audio class="post-audio-player" src="${src}" controls preload="metadata"></audio>
+        </div>
+      </div>`;
+  }
+
+  if (type === "document") {
+    const rawFileName = post.file_name || (post.raw_image ? post.raw_image.split('/').pop() : 'Document');
+    const ext = rawFileName.split('.').pop().toLowerCase();
+    let badgeColor = 'var(--blue-primary)';
+    let badgeText = ext.toUpperCase();
+    if (ext === 'pdf') { badgeColor = '#ef4444'; badgeText = 'PDF'; }
+    else if (ext === 'doc' || ext === 'docx') { badgeColor = '#2563eb'; badgeText = 'DOC'; }
+    else if (ext === 'xls' || ext === 'xlsx' || ext === 'csv') { badgeColor = '#10b981'; badgeText = 'SHEET'; }
+    else if (ext === 'ppt' || ext === 'pptx') { badgeColor = '#f59e0b'; badgeText = 'SLIDES'; }
+
+    const sizeStr = post.file_size ? `${(post.file_size / (1024 * 1024)).toFixed(1)} MB` : '';
+
+    return `
+      <div class="post-media-container doc-container" style="padding:18px 20px; background:linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(59,130,246,0.12) 100%); border-bottom:1px solid var(--blue-border);">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <div style="width:52px; height:52px; border-radius:12px; background:${badgeColor}; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,0.12);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span style="font-size:9px; font-weight:800; letter-spacing:0.5px; margin-top:2px;">${badgeText}</span>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <a href="creation-details.html?id=${post.id}" style="text-decoration:none; color:inherit;">
+              <strong style="display:block; font-size:1.02rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-main); margin-bottom:4px;">${esc(post.title)}</strong>
+            </a>
+            <div class="muted" style="font-size:0.83rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${esc(rawFileName)} ${sizeStr ? `&middot; ${sizeStr}` : ''}
+            </div>
+          </div>
+          <span class="media-type-badge doc-badge" style="position:static; margin-left:auto;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            ${badgeText}
+          </span>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <a href="${src}" target="_blank" rel="noopener noreferrer" class="btn" style="padding:6px 14px; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            Open Document
+          </a>
+          <a href="${src}" download="${esc(rawFileName)}" class="btn secondary" style="padding:6px 14px; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download
+          </a>
+        </div>
+      </div>`;
+  }
+
+  if (type === "link") {
+    let domain = "";
+    const rawUrl = post.link_url || "";
+    try {
+      domain = new URL(rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl).hostname;
+    } catch (e) {
+      domain = rawUrl;
+    }
+
+    return `
+      <div class="post-media-container link-container">
+        ${src ? `
+          <div style="position:relative;">
+            <a href="${esc(rawUrl)}" target="_blank" rel="noopener noreferrer">
+              <img class="post-img" src="${src}" alt="${esc(post.title)}" loading="lazy" style="max-height:280px; object-fit:cover;">
+            </a>
+            <span class="media-type-badge link-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+              Link
+            </span>
+          </div>` : ''}
+        <div style="padding:14px 18px; background:linear-gradient(135deg, rgba(37,99,235,0.06) 0%, rgba(59,130,246,0.1) 100%); display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid var(--blue-border);">
+          <div style="display:flex; align-items:center; gap:12px; min-width:0; flex:1;">
+            <div style="width:38px; height:38px; border-radius:10px; background:var(--blue-primary); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            </div>
+            <div style="min-width:0; flex:1;">
+              <strong style="display:block; font-size:0.95rem; color:var(--text-main);">${esc(domain || "External Resource")}</strong>
+              <span class="muted" style="display:block; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(rawUrl)}</span>
+            </div>
+          </div>
+          <a href="${esc(rawUrl)}" target="_blank" rel="noopener noreferrer" class="btn" style="padding:7px 14px; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; flex-shrink:0;">
+            <span>Visit</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
         </div>
       </div>`;
   }

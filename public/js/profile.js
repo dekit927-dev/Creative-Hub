@@ -17,7 +17,7 @@ async function loadProfile() {
       <div class="profile-banner"></div>
       <div class="profile-hero-body">
         <div class="profile-avatar-row">
-          <div class="profile-avatar-wrap">
+          <div class="profile-avatar-wrap" style="display:inline-flex !important; align-items:center !important; justify-content:center !important;">
             ${avatar(u, "big")}
           </div>
           <div class="profile-badges-row">

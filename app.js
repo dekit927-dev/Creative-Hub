@@ -46,7 +46,23 @@ app.set('views', path.join(__dirname, 'views'));
 
 // CORS & Body parsing
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Global anti-cache headers so browsers never serve stale HTML, views, or scripts
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
+
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
 const VIDEO_EXTS = ['.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi'];
 const AUDIO_EXTS = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'];
 
@@ -66,8 +82,18 @@ function getMediaMimeType(filename) {
   if (ext === '.png') return 'image/png';
   if (ext === '.gif') return 'image/gif';
   if (ext === '.webp') return 'image/webp';
-  if (ext === '.svg') return 'image/svg+xml';
   if (ext === '.pdf') return 'application/pdf';
+  if (ext === '.doc') return 'application/msword';
+  if (ext === '.docx') return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  if (ext === '.txt') return 'text/plain';
+  if (ext === '.rtf') return 'application/rtf';
+  if (ext === '.odt') return 'application/vnd.oasis.opendocument.text';
+  if (ext === '.ppt') return 'application/vnd.ms-powerpoint';
+  if (ext === '.pptx') return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  if (ext === '.xls') return 'application/vnd.ms-excel';
+  if (ext === '.xlsx') return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  if (ext === '.zip') return 'application/zip';
+  if (ext === '.csv') return 'text/csv';
   return null;
 }
 
@@ -132,6 +158,9 @@ app.get('/uploads/:filename', async (req, res, next) => {
     if (fs.existsSync(filePath)) {
       if (isVideo || isAudio) {
         return streamFileWithRange(req, res, filePath, mediaMime);
+      }
+      if (mediaMime) {
+        res.type(mediaMime);
       }
       return res.sendFile(filePath);
     }

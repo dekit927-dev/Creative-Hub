@@ -121,6 +121,11 @@ async function ensureMigrations() {
       -- Creations table migrations
       ALTER TABLE creations ADD COLUMN IF NOT EXISTS image_data TEXT DEFAULT NULL;
       ALTER TABLE creations ALTER COLUMN image TYPE TEXT;
+      ALTER TABLE creations ALTER COLUMN image DROP NOT NULL;
+      ALTER TABLE creations ADD COLUMN IF NOT EXISTS link_url TEXT DEFAULT NULL;
+      ALTER TABLE creations ADD COLUMN IF NOT EXISTS media_type VARCHAR(50) DEFAULT 'image';
+      ALTER TABLE creations ADD COLUMN IF NOT EXISTS file_name VARCHAR(255) DEFAULT NULL;
+      ALTER TABLE creations ADD COLUMN IF NOT EXISTS file_size BIGINT DEFAULT NULL;
     `);
     console.log('Database schema migrations verified successfully.');
   } catch (err) {

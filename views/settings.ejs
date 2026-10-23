@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Settings - Creative Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
+
 <body>
   <div id="navbar"></div>
   <main class="container">
@@ -36,7 +40,8 @@
       <div class="settings-head-row">
         <div>
           <h3 style="margin:0 0 4px;">Appearance & Theme</h3>
-          <p class="muted" style="margin:0; font-size:0.92rem;">Choose your preferred display theme for Creative Hub across all pages.</p>
+          <p class="muted" style="margin:0; font-size:0.92rem;">Choose your preferred display theme for Creative Hub
+            across all pages.</p>
         </div>
         <div class="current-theme-badge" id="current-theme-pill">
           <span class="theme-dot"></span>
@@ -47,7 +52,8 @@
       <!-- Interactive Theme Selector Cards -->
       <div class="theme-options-grid">
         <!-- Light Theme Card -->
-        <div class="theme-card" data-theme-choice="light" id="theme-card-light" tabindex="0" role="button" aria-label="Select Light Theme">
+        <div class="theme-card" data-theme-choice="light" id="theme-card-light" tabindex="0" role="button"
+          aria-label="Select Light Theme">
           <div class="theme-preview-box light-preview">
             <div class="preview-header"></div>
             <div class="preview-body">
@@ -56,20 +62,33 @@
               <div class="preview-btn"></div>
             </div>
             <span class="preview-icon">
-              <svg class="svg-icon lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              <svg class="svg-icon lg" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
             </span>
           </div>
           <div class="theme-card-info">
             <div class="theme-card-title-row">
               <strong>Light Mode</strong>
-              <span class="theme-check-icon"><svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="theme-check-icon"><svg class="svg-icon sm" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg></span>
             </div>
             <p>Clean, high-contrast daylight aesthetic with crisp blue highlights.</p>
           </div>
         </div>
 
         <!-- Dark Theme Card -->
-        <div class="theme-card" data-theme-choice="dark" id="theme-card-dark" tabindex="0" role="button" aria-label="Select Dark Theme">
+        <div class="theme-card" data-theme-choice="dark" id="theme-card-dark" tabindex="0" role="button"
+          aria-label="Select Dark Theme">
           <div class="theme-preview-box dark-preview">
             <div class="preview-header"></div>
             <div class="preview-body">
@@ -78,31 +97,42 @@
               <div class="preview-btn"></div>
             </div>
             <span class="preview-icon">
-              <svg class="svg-icon lg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <svg class="svg-icon lg" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
             </span>
           </div>
           <div class="theme-card-info">
             <div class="theme-card-title-row">
               <strong>Dark Mode</strong>
-              <span class="theme-check-icon"><svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="theme-check-icon"><svg class="svg-icon sm" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg></span>
             </div>
             <p>Sleek obsidian theme designed to reduce glare and eye fatigue.</p>
           </div>
         </div>
 
         <!-- System Auto Card -->
-        <div class="theme-card" data-theme-choice="system" id="theme-card-system" tabindex="0" role="button" aria-label="Select System Default Theme">
+        <div class="theme-card" data-theme-choice="system" id="theme-card-system" tabindex="0" role="button"
+          aria-label="Select System Default Theme">
           <div class="theme-preview-box system-preview">
             <div class="preview-split-left"></div>
             <div class="preview-split-right"></div>
             <span class="preview-icon">
-              <svg class="svg-icon lg" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <svg class="svg-icon lg" viewBox="0 0 24 24">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
             </span>
           </div>
           <div class="theme-card-info">
             <div class="theme-card-title-row">
               <strong>System Auto</strong>
-              <span class="theme-check-icon"><svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="theme-check-icon"><svg class="svg-icon sm" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg></span>
             </div>
             <p>Automatically syncs with your device operating system display mode.</p>
           </div>
@@ -113,12 +143,26 @@
       <div class="theme-quick-switch-wrap">
         <span class="quick-switch-label">Quick toggle:</span>
         <div class="theme-pill-switch">
-          <button type="button" class="theme-pill-btn" id="btn-toggle-light" title="Switch to Light Mode" style="display:inline-flex; align-items:center; gap:6px;">
-            <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <button type="button" class="theme-pill-btn" id="btn-toggle-light" title="Switch to Light Mode"
+            style="display:inline-flex; align-items:center; gap:6px;">
+            <svg class="svg-icon sm" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
             <span>Light</span>
           </button>
-          <button type="button" class="theme-pill-btn" id="btn-toggle-dark" title="Switch to Dark Mode" style="display:inline-flex; align-items:center; gap:6px;">
-            <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <button type="button" class="theme-pill-btn" id="btn-toggle-dark" title="Switch to Dark Mode"
+            style="display:inline-flex; align-items:center; gap:6px;">
+            <svg class="svg-icon sm" viewBox="0 0 24 24">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
             <span>Dark</span>
           </button>
         </div>
@@ -126,7 +170,8 @@
     </div>
     <div class="card settings-section">
       <h3>Notifications</h3>
-      <div class="switch-row"><span>Receive notifications</span><input type="checkbox" id="notif-toggle" style="width:auto;transform:scale(1.4)"></div>
+      <div class="switch-row"><span>Receive notifications</span><input type="checkbox" id="notif-toggle"
+          style="width:auto;transform:scale(1.4)"></div>
     </div>
     <div class="card settings-section">
       <h3>Log out</h3>
@@ -135,7 +180,8 @@
     </div>
   </main>
   <div id="footer"></div>
-  <script src="js/main.js"></script>
-  <script src="js/settings.js"></script>
+  <script src="/js/main.js?v=2"></script>
+  <script src="/js/settings.js?v=2"></script>
 </body>
+
 </html>

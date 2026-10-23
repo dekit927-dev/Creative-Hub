@@ -33,22 +33,58 @@ const CreationController = {
         return res.status(400).json({ detail: 'Please choose a valid category.' });
       }
 
-      if (!req.file) {
-        return res.status(400).json({ detail: 'Please upload a photo, video, or audio file for your creation.' });
+      let mediaType = (req.body.media_type || '').toLowerCase();
+      let linkUrl = (req.body.link_url || req.body.link || '').trim();
+
+      if (mediaType === 'link' || (!mediaType && linkUrl)) {
+        if (!linkUrl) {
+          return res.status(400).json({ detail: 'Please enter a valid resource or website link URL.' });
+        }
+        if (!/^https?:\/\//i.test(linkUrl)) {
+          linkUrl = 'https://' + linkUrl;
+        }
+        try {
+          new URL(linkUrl);
+        } catch (e) {
+          return res.status(400).json({ detail: 'Please enter a valid link URL (e.g. https://example.com).' });
+        }
+        mediaType = 'link';
       }
 
-      const ext = path.extname(req.file.originalname).toLowerCase();
-      const isVideo = req.file.mimetype.startsWith('video/') || ['.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi'].includes(ext);
-      const isAudio = req.file.mimetype.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'].includes(ext);
+      if (!req.file && mediaType !== 'link') {
+        return res.status(400).json({ detail: 'Please upload a photo, video, audio, or document file for your creation.' });
+      }
 
-      if (isVideo && req.file.size > 100 * 1024 * 1024) {
-        return res.status(400).json({ detail: 'Video size cannot exceed 100 MB.' });
-      }
-      if (isAudio && req.file.size > 30 * 1024 * 1024) {
-        return res.status(400).json({ detail: 'Audio size cannot exceed 30 MB.' });
-      }
-      if (!isVideo && !isAudio && req.file.size > 15 * 1024 * 1024) {
-        return res.status(400).json({ detail: 'Photo size cannot exceed 15 MB.' });
+      let isVideo = false;
+      let isAudio = false;
+      let isDoc = false;
+      let ext = '';
+
+      if (req.file) {
+        ext = path.extname(req.file.originalname).toLowerCase();
+        isVideo = req.file.mimetype.startsWith('video/') || ['.mp4', '.webm', '.mov', '.mkv', '.ogv', '.avi'].includes(ext);
+        isAudio = req.file.mimetype.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'].includes(ext);
+        isDoc = req.file.mimetype.startsWith('application/') || req.file.mimetype.startsWith('text/') || ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt', '.zip', '.ppt', '.pptx', '.xls', '.xlsx', '.csv'].includes(ext);
+
+        if (isVideo && req.file.size > 100 * 1024 * 1024) {
+          return res.status(400).json({ detail: 'Video size cannot exceed 100 MB.' });
+        }
+        if (isAudio && req.file.size > 30 * 1024 * 1024) {
+          return res.status(400).json({ detail: 'Audio size cannot exceed 30 MB.' });
+        }
+        if (isDoc && req.file.size > 25 * 1024 * 1024) {
+          return res.status(400).json({ detail: 'Document size cannot exceed 25 MB.' });
+        }
+        if (!isVideo && !isAudio && !isDoc && req.file.size > 15 * 1024 * 1024) {
+          return res.status(400).json({ detail: 'Photo size cannot exceed 15 MB.' });
+        }
+
+        if (mediaType !== 'link') {
+          if (isVideo) mediaType = 'video';
+          else if (isAudio) mediaType = 'audio';
+          else if (isDoc) mediaType = 'document';
+          else mediaType = 'image';
+        }
       }
 
       let imageData = null;
@@ -56,12 +92,14 @@ const CreationController = {
         try {
           const buf = fs.readFileSync(req.file.path);
           let mime = req.file.mimetype;
-          if (isVideo && (!mime || mime === 'application/octet-stream')) {
-            mime = 'video/mp4';
-          } else if (isAudio && (!mime || mime === 'application/octet-stream')) {
-            mime = 'audio/mpeg';
-          } else if (!mime) {
-            mime = 'image/jpeg';
+          if (!mime || mime === 'application/octet-stream') {
+            if (isVideo) mime = 'video/mp4';
+            else if (isAudio) mime = 'audio/mpeg';
+            else if (ext === '.pdf') mime = 'application/pdf';
+            else if (ext === '.doc') mime = 'application/msword';
+            else if (ext === '.docx') mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            else if (ext === '.txt') mime = 'text/plain';
+            else mime = 'image/jpeg';
           }
           imageData = `data:${mime};base64,${buf.toString('base64')}`;
         } catch (e) {
@@ -74,8 +112,12 @@ const CreationController = {
         title,
         description,
         category,
-        image: req.file.filename,
-        imageData
+        image: req.file ? req.file.filename : null,
+        imageData,
+        mediaType: mediaType || 'image',
+        linkUrl: linkUrl || null,
+        fileName: req.file ? req.file.originalname : null,
+        fileSize: req.file ? req.file.size : null
       });
 
       const fullCreation = await CreationModel.getById(creation.id, req.user.id);
