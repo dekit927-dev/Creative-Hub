@@ -21,36 +21,53 @@ function getAppUrl() {
 
 function initTransporter() {
   const rawUser = (process.env.SMTP_USER || '').trim();
-  // Strip all whitespace from password - common when copying Gmail App Passwords (e.g. "abcd efgh ijkl mnop")
-  const rawPass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
-  const service = process.env.SMTP_SERVICE || (rawUser.includes('@gmail.com') && !process.env.SMTP_HOST ? 'gmail' : null);
+  // Strip all whitespace and dashes from password - common when copying Gmail App Passwords (e.g. "abcd efgh ijkl mnop")
+  const rawPass = (process.env.SMTP_PASS || '').replace(/[\s-]+/g, '');
+  const explicitService = (process.env.SMTP_SERVICE || '').trim().toLowerCase();
+  const host = (process.env.SMTP_HOST || '').trim();
 
-  if (service && rawUser && rawPass) {
-    transporter = nodemailer.createTransport({
-      service,
-      auth: {
-        user: rawUser,
-        pass: rawPass
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000
-    });
-  } else if (process.env.SMTP_HOST && rawUser && rawPass) {
-    const isSecure = process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465';
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST.trim(),
-      port: parseInt(process.env.SMTP_PORT || (isSecure ? '465' : '587'), 10),
-      secure: isSecure,
-      auth: {
-        user: rawUser,
-        pass: rawPass
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
+  const isGmail = explicitService === 'gmail' ||
+                  rawUser.toLowerCase().includes('@gmail.com') ||
+                  host.toLowerCase().includes('gmail');
+
+  if (rawUser && rawPass) {
+    if (isGmail) {
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: rawUser,
+          pass: rawPass
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000
+      });
+    } else if (host) {
+      const isSecure = process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465';
+      transporter = nodemailer.createTransport({
+        host,
+        port: parseInt(process.env.SMTP_PORT || (isSecure ? '465' : '587'), 10),
+        secure: isSecure,
+        auth: {
+          user: rawUser,
+          pass: rawPass
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+    } else if (explicitService) {
+      transporter = nodemailer.createTransport({
+        service: explicitService,
+        auth: {
+          user: rawUser,
+          pass: rawPass
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000
+      });
+    }
   } else {
     transporter = null;
   }
@@ -61,18 +78,42 @@ initTransporter();
 
 const EmailService = {
   getAppUrl,
+  initTransporter,
   isConfigured() {
     const rawUser = (process.env.SMTP_USER || '').trim();
-    const rawPass = (process.env.SMTP_PASS || '').trim();
+    const rawPass = (process.env.SMTP_PASS || '').replace(/[\s-]+/g, '');
     const hasHostOrService = Boolean(
       process.env.SMTP_SERVICE ||
       process.env.SMTP_HOST ||
-      rawUser.includes('@gmail.com')
+      rawUser.toLowerCase().includes('@gmail.com')
     );
     return Boolean(hasHostOrService && rawUser && rawPass);
   },
   getTransporter() {
     return transporter || initTransporter();
+  },
+
+  async verifyTransporter() {
+    const trans = EmailService.getTransporter();
+    if (!trans) {
+      return {
+        configured: false,
+        connected: false,
+        message: 'SMTP credentials not configured in .env (SMTP_USER / SMTP_PASS).'
+      };
+    }
+    try {
+      await trans.verify();
+      console.log('[EmailService] SMTP Server connection verified and ready to send emails.');
+      return { configured: true, connected: true };
+    } catch (err) {
+      console.error('[EmailService Error] SMTP verification failed:', err.message);
+      if (err.message && err.message.includes('Username and Password not accepted')) {
+        console.error('[EmailService Hint] Gmail requires a 16-character App Password, NOT your regular Google password.');
+        console.error('[EmailService Hint] Generate one at: https://myaccount.google.com/apppasswords');
+      }
+      return { configured: true, connected: false, error: err.message };
+    }
   },
 
   getLastSentEmail() {
@@ -84,13 +125,17 @@ const EmailService = {
   },
 
   async sendMail({ to, subject, html, text }) {
-    const fromAddress = process.env.EMAIL_FROM || '"CreativeHub Sherubtse" <noreply@sherubtse.edu.bt>';
+    const rawUser = (process.env.SMTP_USER || '').trim();
+    // Default From to the authenticated user so Gmail does not reject it as spoofing
+    const defaultFrom = rawUser ? `"CreativeHub Sherubtse" <${rawUser}>` : '"CreativeHub Sherubtse" <noreply@sherubtse.edu.bt>';
+    const fromAddress = process.env.EMAIL_FROM || defaultFrom;
+
     const emailData = {
       from: fromAddress,
       to,
       subject,
       html,
-      text: text || html.replace(/<[^>]+>/g, ' ')
+      text: text || (html ? html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '')
     };
 
     lastSentEmail = {
@@ -106,13 +151,16 @@ const EmailService = {
         console.log(`[EmailService] Live email dispatched to ${to}: ${info.messageId}`);
         return { success: true, messageId: info.messageId, previewOnly: false };
       } catch (err) {
-        console.warn(`[EmailService Warning] Failed to deliver email via SMTP to ${to}:`, err.message);
-        // Fall back gracefully so user operations are not blocked
-        return { success: false, error: err.message, previewOnly: true };
+        console.error(`[EmailService Error] Failed to deliver email via SMTP to ${to}:`, err.message);
+        if (err.message && err.message.includes('Username and Password not accepted')) {
+          console.error('[EmailService Hint] Gmail rejected credentials. Make sure you use a 16-character Google App Password (https://myaccount.google.com/apppasswords).');
+        }
+        // Return clear failure detail
+        return { success: false, error: err.message, previewOnly: false };
       }
     } else {
-      // Development / test fallback logging
-      console.log(`[EmailService Dev/Test] To: ${to} | Subject: "${subject}"`);
+      // Fallback logging when SMTP is not configured
+      console.log(`[EmailService Dev/Test] To: ${to} | Subject: "${subject}" (SMTP credentials not set)`);
       return { success: true, previewOnly: true };
     }
   },

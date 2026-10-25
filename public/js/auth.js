@@ -15,7 +15,12 @@ if (urlParams.get("verified") === "true") {
   if (emailParam && document.getElementById("email")) {
     document.getElementById("email").value = emailParam;
   }
-  showMessage("message", "Account created successfully! Please verify your account before logging in.", "info");
+  const isSent = urlParams.get("sent") === "true";
+  if (isSent) {
+    showMessage("message", "Account created! A verification link was sent to your email. Please check your inbox and spam folder.", "info");
+  } else {
+    showMessage("message", "Account created successfully! Please verify your account before logging in.", "info");
+  }
   const unverifiedBox = document.getElementById("unverified-box");
   if (unverifiedBox) {
     unverifiedBox.classList.remove("hidden");
@@ -28,7 +33,9 @@ if (urlParams.get("verified") === "true") {
       }
       const desc = document.getElementById("unverified-desc");
       if (desc) {
-        desc.textContent = "Account created! Click 'Instant Verify & Log In' below to activate your account and start exploring, or check your email inbox:";
+        desc.textContent = isSent
+          ? "We sent a verification link to your Gmail inbox (check spam folder if needed). You can also click 'Instant Verify & Log In' below:"
+          : "Account created! Click 'Instant Verify & Log In' below to activate your account and start exploring, or check your email inbox:";
       }
     }
   }
@@ -176,7 +183,8 @@ if (registerForm) {
         window.location.href = "home.html";
       } else {
         const tokenParam = result && result.verificationToken ? `&token=${encodeURIComponent(result.verificationToken)}` : '';
-        window.location.href = `login.html?registered=true&email=${encodeURIComponent(body.email)}${tokenParam}`;
+        const sentParam = result && result.emailSent ? '&sent=true' : '';
+        window.location.href = `login.html?registered=true&email=${encodeURIComponent(body.email)}${tokenParam}${sentParam}`;
       }
     } catch (error) {
       let msg = error.message;

@@ -81,21 +81,29 @@ const AuthController = {
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       await UserModel.setVerificationToken(user.id, verificationToken, expiresAt);
 
-      await EmailService.sendVerificationEmail(user.email, user.full_name, verificationToken);
+      const emailResult = await EmailService.sendVerificationEmail(user.email, user.full_name, verificationToken);
 
       const appUrl = EmailService.getAppUrl();
       const verificationUrl = `${appUrl}/verify-email.html?token=${verificationToken}`;
 
+      let clientMessage;
+      if (emailResult && emailResult.success && !emailResult.previewOnly) {
+        clientMessage = `Account created! Verification link sent to ${user.email}. Please check your inbox and Spam folder.`;
+      } else if (EmailService.isConfigured() && emailResult && !emailResult.success) {
+        clientMessage = `Account created! (Email delivery to ${user.email} failed: ${emailResult.error || 'SMTP error'}). Click Instant Verify below to log in.`;
+      } else {
+        clientMessage = 'Account created! Complete your verification below to log in.';
+      }
+
       res.status(201).json({
-        message: EmailService.isConfigured()
-          ? 'Account created! Please check your email to verify your account before logging in.'
-          : 'Account created! Complete your verification below to log in.',
+        message: clientMessage,
         email: user.email,
         requires_verification: true,
         verified: false,
         verificationToken,
         verificationUrl,
-        isConfigured: EmailService.isConfigured()
+        isConfigured: EmailService.isConfigured(),
+        emailSent: Boolean(emailResult && emailResult.success && !emailResult.previewOnly)
       });
     } catch (err) {
       next(err);
@@ -249,17 +257,25 @@ const AuthController = {
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
       await UserModel.setVerificationToken(user.id, verificationToken, expiresAt);
 
-      await EmailService.sendVerificationEmail(user.email, user.full_name, verificationToken);
+      const emailResult = await EmailService.sendVerificationEmail(user.email, user.full_name, verificationToken);
       const appUrl = EmailService.getAppUrl();
       const verificationUrl = `${appUrl}/verify-email.html?token=${verificationToken}`;
 
+      let clientMessage;
+      if (emailResult && emailResult.success && !emailResult.previewOnly) {
+        clientMessage = `A new verification email has been sent to ${user.email}. Please check your inbox and spam folder.`;
+      } else if (EmailService.isConfigured() && emailResult && !emailResult.success) {
+        clientMessage = `Failed to deliver email (${emailResult.error || 'SMTP error'}). You can click Instant Verify below.`;
+      } else {
+        clientMessage = 'Verification link refreshed. Tap below to verify instantly.';
+      }
+
       res.json({
-        message: EmailService.isConfigured()
-          ? 'A new verification email has been sent. Please check your inbox and spam folder.'
-          : 'Verification link refreshed. Tap below to verify instantly.',
+        message: clientMessage,
         verificationToken,
         verificationUrl,
-        isConfigured: EmailService.isConfigured()
+        isConfigured: EmailService.isConfigured(),
+        emailSent: Boolean(emailResult && emailResult.success && !emailResult.previewOnly)
       });
     } catch (err) {
       next(err);

@@ -8,7 +8,8 @@
     "dev": "nodemon app.js",
     "init-db": "node config/initDb.js",
     "seed": "node config/seed.js",
-    "test": "node test_admin_system.js"
+    "test": "node test_admin_system.js",
+    "test-email": "node test-email.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
