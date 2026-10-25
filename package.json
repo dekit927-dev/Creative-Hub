@@ -9,7 +9,8 @@
     "init-db": "node config/initDb.js",
     "seed": "node config/seed.js",
     "test": "node test_admin_system.js",
-    "test-email": "node test-email.js"
+    "test-email": "node test-email.js",
+    "qr": "node generate-qr.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -22,6 +23,7 @@
     "nodemailer": "^10.2.0",
     "pg": "^8.13.1",
     "pg-promise": "^12.7.1",
+    "qrcode": "^1.5.4",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
