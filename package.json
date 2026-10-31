@@ -10,7 +10,8 @@
     "seed": "node config/seed.js",
     "test": "node test_admin_system.js",
     "test-email": "node test-email.js",
-    "qr": "node generate-qr.js"
+    "qr": "node generate-qr.js",
+    "sync-db": "node sync-database.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
