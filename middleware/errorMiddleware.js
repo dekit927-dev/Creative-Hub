@@ -1,6 +1,12 @@
 function errorHandler(err, req, res, next) {
   console.error('Server error:', err);
 
+  if (err.code === '53000' || (err.message && err.message.includes('exceeded the quota'))) {
+    return res.status(503).json({
+      detail: 'Cloud database quota exceeded. Please reset or recreate your Neon database, or update DATABASE_URL in Render.'
+    });
+  }
+
   if (err.message && (err.message.includes('Invalid image') || err.message.includes('Invalid file') || err.message.includes('Invalid file type'))) {
     return res.status(400).json({ detail: err.message });
   }

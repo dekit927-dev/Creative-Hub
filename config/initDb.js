@@ -148,6 +148,19 @@ async function initDb(options = {}) {
       return true;
     } catch (error) {
       console.warn(`[Database] Attempt ${attempt}/${maxRetries} failed: ${error.message || error}`);
+
+      if (error.code === '53000' || (error.message && error.message.includes('exceeded the quota'))) {
+        console.error('\n======================================================');
+        console.error('[DATABASE QUOTA EXCEEDED]');
+        console.error('Your Neon database has exceeded its free usage quota.');
+        console.error('To fix:');
+        console.error('  1. Go to https://console.neon.tech');
+        console.error('  2. Create a new free project (or create a new database/branch)');
+        console.error('  3. Copy the new connection string and update DATABASE_URL in Render Dashboard');
+        console.error('======================================================\n');
+        throw error;
+      }
+
       if (attempt >= maxRetries) {
         console.error('Error initializing database tables after retries:', error.message || error);
         throw error;
