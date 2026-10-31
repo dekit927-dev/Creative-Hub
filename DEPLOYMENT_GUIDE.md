@@ -104,20 +104,31 @@ coverage
    * **Branch**: `main`
    * **Runtime**: **Docker** (Render detects the Dockerfile automatically)
    * **Instance Type**: **Free**
-5. Under **Environment Variables**, add:
+5. Under **Environment Variables**, you can use **either Option 1 (Easiest)** or **Option 2 (Individual variables)**:
 
+#### Option 1 (Single Variable — Recommended & Easiest):
 | Key | Value | Description |
 | :--- | :--- | :--- |
-| `PORT` | `3000` | Application port |
+| `DATABASE_URL` | `postgresql://neondb_owner:PASSWORD@ep-xyz-pooler...neon.tech/neondb?sslmode=require` | Your complete Neon connection string (CreativeHub automatically sanitizes and applies SSL) |
+| `SESSION_SECRET` | `creativehub_super_secret_production_key_2026` | Random secret text |
+| `APP_URL` | `https://creative-hub-xxxx.onrender.com` | Your live Render URL |
+
+#### Option 2 (Individual Variables):
+| Key | Value | Description |
+| :--- | :--- | :--- |
 | `NODE_ENV` | `production` | Production environment |
 | `DB_HOST` | `ep-xyz-pooler.c-6.us-east-2.aws.neon.tech` | Your Neon Host |
 | `DB_PORT` | `5432` | PostgreSQL Port |
 | `DB_NAME` | `neondb` | Neon database name |
 | `DB_USER` | `neondb_owner` | Neon database user |
 | `DB_PASS` | `<your-neon-password>` | Neon database password |
-| `DB_SSL` | `true` | **Crucial** for Neon cloud connection |
+| `DB_SSL` | `true` | Neon cloud SSL |
 | `SESSION_SECRET` | `creativehub_super_secret_production_key_2026` | Random secret text |
 | `APP_URL` | `https://creative-hub-xxxx.onrender.com` | Your live Render URL |
+
+*(Optional Email Configuration)*:
+| Key | Value | Description |
+| :--- | :--- | :--- |
 | `SMTP_SERVICE` | `gmail` *(optional)* | Email service provider |
 | `SMTP_USER` | `your-email@gmail.com` *(optional)* | Sender email address |
 | `SMTP_PASS` | `xxxx xxxx xxxx xxxx` *(optional)* | 16-character Google App Password |

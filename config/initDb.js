@@ -133,16 +133,29 @@ async function ensureMigrations() {
   }
 }
 
-async function initDb() {
-  try {
-    const schemaSql = fs.readFileSync(path.join(__dirname, '../models/schema.sql'), 'utf-8');
-    await db.none(schemaSql);
-    console.log('PostgreSQL database tables initialized successfully.');
-    await ensureMigrations();
-    await syncUploadsToDb();
-  } catch (error) {
-    console.error('Error initializing database tables:', error);
-    throw error;
+async function initDb(options = {}) {
+  const maxRetries = options.retries !== undefined ? options.retries : 1;
+  const initialDelayMs = options.delayMs || 3000;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[Database] Connecting & verifying schema (attempt ${attempt}/${maxRetries})...`);
+      const schemaSql = fs.readFileSync(path.join(__dirname, '../models/schema.sql'), 'utf-8');
+      await db.none(schemaSql);
+      console.log('[Database] PostgreSQL database tables initialized successfully.');
+      await ensureMigrations();
+      await syncUploadsToDb();
+      return true;
+    } catch (error) {
+      console.warn(`[Database] Attempt ${attempt}/${maxRetries} failed: ${error.message || error}`);
+      if (attempt >= maxRetries) {
+        console.error('Error initializing database tables after retries:', error.message || error);
+        throw error;
+      }
+      const waitTime = Math.min(initialDelayMs * attempt, 15000);
+      console.log(`[Database] Waiting ${waitTime / 1000}s before retrying (cloud database may be waking up)...`);
+      await new Promise(r => setTimeout(r, waitTime));
+    }
   }
 }
 

@@ -15,6 +15,9 @@ const { errorHandler } = require('./middleware/errorMiddleware');
 const MessageController = require('./controllers/messageController');
 
 const app = express();
+// Enable reverse proxy trust for Render / production HTTPS headers
+app.set('trust proxy', 1);
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -241,6 +244,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check endpoint for Render and external uptime monitoring
+app.get('/health', async (req, res) => {
+  const { checkConnection, getDbState } = require('./config/db');
+  const dbStatus = await checkConnection();
+  res.status(200).json({
+    status: 'ok',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    database: dbStatus.ok ? 'connected' : 'connecting',
+    details: getDbState()
+  });
+});
+
 // Routes
 const indexRoutes = require('./routes/index');
 const apiRoutes = require('./routes/api');
@@ -252,28 +268,40 @@ app.use('/api', apiRoutes);
 app.use(errorHandler);
 
 // Database initialization and server startup
-async function startServer() {
-  try {
-    await initDb();
-    await seedDatabase();
-    server.on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        console.error(`\n[ERROR] Port ${PORT} is already in use by another process.`);
-        console.error(`To free port ${PORT} on Windows, run this in PowerShell:`);
-        console.error(`  Get-Process -Id (Get-NetTCPConnection -LocalPort ${PORT}).OwningProcess | Stop-Process -Force\n`);
-      } else {
-        console.error('Server error:', err);
-      }
-      process.exit(1);
-    });
-
-    server.listen(PORT, () => {
-      console.log(`CreativeHub running at http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start CreativeHub server:', error);
+function startServer() {
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n[ERROR] Port ${PORT} is already in use by another process.`);
+      console.error(`To free port ${PORT} on Windows, run this in PowerShell:`);
+      console.error(`  Get-Process -Id (Get-NetTCPConnection -LocalPort ${PORT}).OwningProcess | Stop-Process -Force\n`);
+    } else {
+      console.error('Server error:', err);
+    }
     process.exit(1);
-  }
+  });
+
+  // Bind to 0.0.0.0 FIRST so Render and container health checks succeed immediately without timing out
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`CreativeHub running at http://0.0.0.0:${PORT} (environment: ${process.env.NODE_ENV || 'development'})`);
+    console.log(`App URL: ${process.env.APP_URL || `http://localhost:${PORT}`}`);
+
+    // Asynchronously verify & initialize database tables with retries (accommodates Neon compute sleep/wake)
+    (async () => {
+      try {
+        await initDb({ retries: 8, delayMs: 3000 });
+        try {
+          await seedDatabase();
+        } catch (seedErr) {
+          console.warn('[Seed] Seed warning:', seedErr.message || seedErr);
+        }
+        console.log('CreativeHub database initialized and ready for traffic.');
+      } catch (dbErr) {
+        console.error('[Database Warning] Could not connect to PostgreSQL after multiple retry attempts:', dbErr.message || dbErr);
+        console.error('The CreativeHub web server remains live and serving requests.');
+        console.error('Please verify your database credentials in Render (DATABASE_URL or DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_SSL=true).');
+      }
+    })();
+  });
 }
 
 process.on('unhandledRejection', (reason, promise) => {
