@@ -87,7 +87,7 @@ const ChallengeController = {
         skills: skills ? skills.trim() : null,
         eligibility: eligibility ? eligibility.trim() : null,
         participation_type: participation_type || 'Individual',
-        team_size: team_size || '1 - 4 members',
+        team_size: team_size || 'Individual',
         location: location || 'Kanglung Campus',
         mode: mode || 'Hybrid',
         start_date: start_date ? new Date(start_date) : null,

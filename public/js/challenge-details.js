@@ -33,7 +33,8 @@ function renderDetails(ch) {
   if (modeTextEl) modeTextEl.textContent = ch.mode;
   document.getElementById("c-deadline").textContent = formatDate(ch.deadline);
   document.getElementById("c-location").textContent = ch.location;
-  document.getElementById("c-team-size").textContent = ch.team_size;
+  const teamEl = document.getElementById("c-team-size");
+  if (teamEl) teamEl.textContent = ch.team_size;
   document.getElementById("c-participants-count").textContent = ch.participants;
 
   const ended = ch.deadline && new Date(ch.deadline) < new Date(new Date().toDateString());
@@ -274,7 +275,8 @@ function openEditModal(focusField = "") {
     document.getElementById("edit-deadline").value = "";
   }
 
-  document.getElementById("edit-team-size").value = challengeData.team_size || "";
+  const editTeamEl = document.getElementById("edit-team-size");
+  if (editTeamEl) editTeamEl.value = challengeData.team_size || "Individual";
   document.getElementById("edit-mode").value = challengeData.mode || "Hybrid";
   document.getElementById("edit-category").value = challengeData.category || "";
   document.getElementById("edit-organizer").value = challengeData.organizer || "";
@@ -292,7 +294,6 @@ function openEditModal(focusField = "") {
     const fieldMap = {
       deadline: "edit-deadline",
       location: "edit-location",
-      team_size: "edit-team-size",
       mode: "edit-mode",
       category: "edit-category",
       description: "edit-description",
@@ -330,11 +331,12 @@ if (editForm) {
     saveBtn.disabled = true;
     saveBtn.textContent = "Saving...";
 
+    const teamInput = document.getElementById("edit-team-size");
     const body = {
       title: document.getElementById("edit-title").value.trim(),
       location: document.getElementById("edit-location").value.trim(),
       deadline: document.getElementById("edit-deadline").value,
-      team_size: document.getElementById("edit-team-size").value.trim(),
+      team_size: teamInput ? teamInput.value.trim() : (challengeData ? challengeData.team_size : "Individual"),
       mode: document.getElementById("edit-mode").value,
       category: document.getElementById("edit-category").value.trim(),
       organizer: document.getElementById("edit-organizer").value.trim(),
